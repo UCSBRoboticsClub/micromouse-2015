@@ -130,12 +130,12 @@
 <wire x1="8.255" y1="0" x2="8.255" y2="15.875" width="0" layer="20"/>
 <wire x1="8.255" y1="15.875" x2="0" y2="15.875" width="0" layer="20"/>
 <wire x1="0" y1="15.875" x2="0" y2="0" width="0" layer="20"/>
-<text x="6.6675" y="6.82625" size="0.6096" layer="21" rot="R90" align="center-left">2.8V</text>
-<text x="4.1275" y="6.82625" size="0.6096" layer="21" rot="R90" align="center-left">GP1</text>
-<text x="1.5875" y="6.82625" size="0.6096" layer="21" rot="R90" align="center-left">GP0</text>
-<text x="6.6675" y="6.82625" size="0.6096" layer="22" rot="MR90" align="center-left">GND</text>
-<text x="4.1275" y="6.82625" size="0.6096" layer="22" rot="MR90" align="center-left">SDA</text>
-<text x="1.5875" y="6.82625" size="0.6096" layer="22" rot="MR90" align="center-left">SCL</text>
+<text x="6.6675" y="6.82625" size="0.7112" layer="21" rot="R90" align="center-left">2.8V</text>
+<text x="4.1275" y="6.82625" size="0.7112" layer="21" rot="R90" align="center-left">GP1</text>
+<text x="1.5875" y="6.82625" size="0.7112" layer="21" rot="R90" align="center-left">GP0</text>
+<text x="6.6675" y="6.82625" size="0.7112" layer="22" rot="MR90" align="center-left">GND</text>
+<text x="4.1275" y="6.82625" size="0.7112" layer="22" rot="MR90" align="center-left">SDA</text>
+<text x="1.5875" y="6.82625" size="0.7112" layer="22" rot="MR90" align="center-left">SCL</text>
 </plain>
 <libraries>
 <library name="SparkFun-Passives">
