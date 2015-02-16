@@ -140,7 +140,7 @@
 <circle x="42.291" y="32.893" radius="2.54" width="0" layer="42"/>
 <circle x="42.291" y="32.893" radius="2.54" width="0" layer="41"/>
 <circle x="28.829" y="32.893" radius="2.54" width="0" layer="42"/>
-<text x="41.91" y="27.94" size="1.778" layer="21" rot="R180" align="center">Micromouse</text>
+<text x="35.56" y="27.94" size="1.778" layer="21" rot="R180" align="center">Micromouse</text>
 <text x="44.45" y="13.97" size="1.778" layer="22" rot="MR0" align="center">UCSB Robotics Club
 Patrick Clary, 2015</text>
 <text x="32.7025" y="16.51" size="1.778" layer="21" rot="SR270" align="center">Teensy 3.1</text>
@@ -836,12 +836,14 @@ Please make sure your boards conform to these design rules.</description>
 </element>
 <element name="U3" library="SparkFun-PowerIC" package="SOT23-3" value="" x="10.16" y="27.94" rot="R270"/>
 <element name="C4" library="SparkFun-Capacitors" package="0603-CAP" value="1uF" x="24.13" y="20.32" rot="R90"/>
-<element name="BZ1" library="Custom" package="BUZZER" value="BUZZER" x="51.1175" y="34.925" smashed="yes" rot="R135">
-<attribute name="NAME" x="55.1659125" y="38.9734125" size="1.27" layer="25" rot="R135" align="center"/>
+<element name="BZ1" library="Custom" package="BUZZER" value="BUZZER" x="49.53" y="36.5125" smashed="yes" rot="R135">
+<attribute name="NAME" x="53.5784125" y="40.5609125" size="1.27" layer="25" rot="R135" align="center"/>
 </element>
-<element name="Q2" library="SparkFun-DiscreteSemi" package="SOT23-3" value="" x="54.61" y="28.575">
-<attribute name="PROD_ID" value="TRANS-08345" x="54.61" y="28.575" size="0.8128" layer="27" display="off"/>
+<element name="Q2" library="SparkFun-DiscreteSemi" package="SOT23-3" value="" x="53.975" y="30.7975">
+<attribute name="PROD_ID" value="TRANS-08345" x="53.975" y="30.7975" size="0.8128" layer="27" display="off"/>
 </element>
+<element name="R8" library="SparkFun-Resistors" package="0603-RES" value="100K" x="54.9275" y="27.305" rot="R270"/>
+<element name="R9" library="SparkFun-Resistors" package="0603-RES" value="132" x="53.0225" y="27.305" rot="R90"/>
 </elements>
 <signals>
 <signal name="VIN">
@@ -976,8 +978,12 @@ Please make sure your boards conform to these design rules.</description>
 <wire x1="11.53111875" y1="40.43" x2="13.0175" y2="41.275" width="0.2032" layer="1"/>
 <via x="13.0175" y="41.275" extent="1-16" drill="0.3302"/>
 <contactref element="Q2" pad="2"/>
-<wire x1="55.56" y1="27.575" x2="55.56" y2="26.3525" width="0.3048" layer="1"/>
-<via x="55.56" y="26.3525" extent="1-16" drill="0.508"/>
+<contactref element="R8" pad="2"/>
+<wire x1="54.9275" y1="29.795" x2="54.925" y2="29.7975" width="0.3048" layer="1"/>
+<wire x1="54.925" y1="29.7975" x2="56.1975" y2="29.7975" width="0.3048" layer="1"/>
+<wire x1="54.9275" y1="26.455" x2="56.1975" y2="26.455" width="0.3048" layer="1"/>
+<via x="56.1975" y="29.7975" extent="1-16" drill="0.508"/>
+<via x="56.1975" y="26.455" extent="1-16" drill="0.3302"/>
 </signal>
 <signal name="VDD">
 <contactref element="Q1" pad="2"/>
@@ -1464,14 +1470,22 @@ Please make sure your boards conform to these design rules.</description>
 <signal name="N$8">
 <contactref element="BZ1" pad="-"/>
 <contactref element="Q2" pad="3"/>
-<wire x1="54.61" y1="29.675" x2="54.61" y2="31.432496875" width="0.3048" layer="1"/>
-<wire x1="54.61" y1="31.432496875" x2="52.5317125" y2="33.510784375" width="0.3048" layer="1"/>
+<wire x1="50.9442125" y1="35.098284375" x2="53.975" y2="32.067496875" width="0.3048" layer="1"/>
+<wire x1="53.975" y1="32.067496875" x2="53.975" y2="31.8975" width="0.3048" layer="1"/>
 </signal>
 <signal name="BUZZ">
 <contactref element="A1" pad="5"/>
+<contactref element="R9" pad="1"/>
+<wire x1="53.34" y1="24.13" x2="53.34" y2="26.1375" width="0.3048" layer="1"/>
+<wire x1="53.34" y1="26.1375" x2="53.0225" y2="26.455" width="0.3048" layer="1"/>
+</signal>
+<signal name="N$15">
 <contactref element="Q2" pad="1"/>
-<wire x1="53.66" y1="27.575" x2="53.66" y2="24.45" width="0.2032" layer="1"/>
-<wire x1="53.66" y1="24.45" x2="53.34" y2="24.13" width="0.2032" layer="1"/>
+<contactref element="R8" pad="1"/>
+<contactref element="R9" pad="2"/>
+<wire x1="53.0225" y1="28.155" x2="53.0225" y2="29.7975" width="0.3048" layer="1"/>
+<wire x1="53.0225" y1="29.7975" x2="53.025" y2="29.7975" width="0.3048" layer="1"/>
+<wire x1="54.9275" y1="28.155" x2="53.0225" y2="28.155" width="0.3048" layer="1"/>
 </signal>
 </signals>
 <errors>
