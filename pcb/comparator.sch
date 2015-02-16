@@ -2199,7 +2199,7 @@ Standard 0603 ceramic capacitor, and 0.1" leaded capacitor.</description>
 <instance part="R3" gate="G$1" x="-2.54" y="35.56"/>
 <instance part="GND3" gate="1" x="5.08" y="15.24"/>
 <instance part="SUPPLY3" gate="G$1" x="5.08" y="50.8"/>
-<instance part="R4" gate="G$1" x="86.36" y="40.64" rot="R90"/>
+<instance part="R4" gate="G$1" x="86.36" y="40.64" rot="R270"/>
 <instance part="R5" gate="G$1" x="86.36" y="25.4" rot="MR90"/>
 <instance part="R6" gate="G$1" x="93.98" y="33.02"/>
 <instance part="SUPPLY4" gate="G$1" x="86.36" y="48.26"/>
@@ -2308,7 +2308,7 @@ Standard 0603 ceramic capacitor, and 0.1" leaded capacitor.</description>
 <wire x1="5.08" y1="50.8" x2="5.08" y2="48.26" width="0.1524" layer="91"/>
 </segment>
 <segment>
-<pinref part="R4" gate="G$1" pin="2"/>
+<pinref part="R4" gate="G$1" pin="1"/>
 <pinref part="SUPPLY4" gate="G$1" pin="3.3V"/>
 <wire x1="86.36" y1="48.26" x2="86.36" y2="45.72" width="0.1524" layer="91"/>
 </segment>
@@ -2387,7 +2387,7 @@ Standard 0603 ceramic capacitor, and 0.1" leaded capacitor.</description>
 <pinref part="R6" gate="G$1" pin="1"/>
 <pinref part="U1" gate="G$1" pin="INB+"/>
 <wire x1="88.9" y1="33.02" x2="86.36" y2="33.02" width="0.1524" layer="91"/>
-<pinref part="R4" gate="G$1" pin="1"/>
+<pinref part="R4" gate="G$1" pin="2"/>
 <pinref part="R5" gate="G$1" pin="2"/>
 <wire x1="86.36" y1="33.02" x2="81.28" y2="33.02" width="0.1524" layer="91"/>
 <wire x1="81.28" y1="33.02" x2="66.04" y2="33.02" width="0.1524" layer="91"/>
