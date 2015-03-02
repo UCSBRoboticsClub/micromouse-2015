@@ -1030,8 +1030,8 @@ You are welcome to use this library for commercial purposes. For attribution, we
 </classes>
 <parts>
 <part name="U1" library="Nick'sEagle" deviceset="STPROXSENSOR" device=""/>
-<part name="C1" library="SparkFun-Passives" deviceset="CAP" device="0603-CAP" value="0.1nF"/>
-<part name="C2" library="SparkFun-Passives" deviceset="CAP" device="0603-CAP" value="4.7nF"/>
+<part name="C1" library="SparkFun-Passives" deviceset="CAP" device="0603-CAP" value="0.1uF"/>
+<part name="C2" library="SparkFun-Passives" deviceset="CAP" device="0603-CAP" value="4.7uF"/>
 <part name="R1" library="SparkFun-Passives" deviceset="RESISTOR" device="0603-RES" value="47k"/>
 <part name="SUPPLY1" library="SparkFun-Aesthetics" deviceset="2.8V" device=""/>
 <part name="GND1" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
