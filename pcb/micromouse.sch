@@ -3662,10 +3662,10 @@ at 30/07/2012 11:22:31</description>
 <part name="SUPPLY17" library="SparkFun-Aesthetics" deviceset="2.8V" device=""/>
 <part name="SUPPLY18" library="SparkFun-Aesthetics" deviceset="2.8V" device=""/>
 <part name="LED2" library="SparkFun-LED" deviceset="LED" device="0603"/>
-<part name="R6" library="SparkFun-Resistors" deviceset="RESISTOR" device="0603" value="332"/>
+<part name="R6" library="SparkFun-Resistors" deviceset="RESISTOR" device="0603" value="100"/>
 <part name="GND5" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
 <part name="LED1" library="SparkFun-LED" deviceset="LED" device="0603"/>
-<part name="R7" library="SparkFun-Resistors" deviceset="RESISTOR" device="0603" value="332"/>
+<part name="R7" library="SparkFun-Resistors" deviceset="RESISTOR" device="0603" value="100"/>
 <part name="GND16" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
 <part name="C4" library="SparkFun-Capacitors" deviceset="CAP" device="0603-CAP" value="1uF"/>
 <part name="BZ1" library="Custom" deviceset="BUZZER" device=""/>
