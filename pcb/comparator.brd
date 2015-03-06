@@ -569,8 +569,8 @@ Please make sure your boards conform to these design rules.</description>
 <element name="R4" library="SparkFun-Resistors" package="0603-RES" value="10K" x="14.2875" y="7.9375" rot="MR90"/>
 <element name="R5" library="SparkFun-Resistors" package="0603-RES" value="3.3K" x="12.3825" y="11.1125" rot="MR270"/>
 <element name="R6" library="SparkFun-Resistors" package="0603-RES" value="100K" x="12.3825" y="7.9375" rot="MR270"/>
-<element name="C1" library="SparkFun-Capacitors" package="0603-CAP" value="" x="1.5875" y="11.1125" rot="MR270"/>
-<element name="C2" library="SparkFun-Capacitors" package="0603-CAP" value="" x="14.2875" y="11.1125" rot="MR90"/>
+<element name="C1" library="SparkFun-Capacitors" package="0603-CAP" value="1nF" x="1.5875" y="11.1125" rot="MR270"/>
+<element name="C2" library="SparkFun-Capacitors" package="0603-CAP" value="1nF" x="14.2875" y="11.1125" rot="MR90"/>
 <element name="C3" library="SparkFun-Capacitors" package="0603-CAP" value="0.1uF" x="7.9375" y="5.3975" rot="MR0"/>
 <element name="R7" library="SparkFun-Resistors" package="0603-RES" value="0" x="7.9375" y="11.7475" smashed="yes" rot="MR0">
 <attribute name="NAME" x="7.5565" y="12.5095" size="0.4064" layer="26" font="vector" rot="MR0"/>
