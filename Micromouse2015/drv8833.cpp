@@ -21,13 +21,13 @@ void Motor::write(float value)
 {
     if (value > 0.f)
     {
-        analogWrite(pin1, 65535 * fabs(value));
+        analogWrite(pin1, 65535 * std::fabs(value));
         digitalWrite(pin2, LOW);
     }
     else
     {
         digitalWrite(pin1, LOW);
-        analogWrite(pin2, 65535 * fabs(value));
+        analogWrite(pin2, 65535 * std::fabs(value));
     }
 }
 

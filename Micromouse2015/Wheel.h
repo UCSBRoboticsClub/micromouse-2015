@@ -2,15 +2,21 @@
 #define WHEEL_H
 
 #include <Encoder.h>
-#include "./LowPass.h"
-#include "./drv8833.h"
-#include "./ControlLoop.h"
+#include "LowPass.h"
+#include "drv8833.h"
+#include "ControlLoop.h"
 
 
 class Wheel
 {
 public:
-    Wheel(int motPin1, int motPin2, int encPin1, int encPin2, float dt, float circumference, int cpr);
+    Wheel(int motPin1,
+          int motPin2,
+          int encPin1,
+          int encPin2,
+          float dt,
+          float circumference,
+          int cpr);
     void update();
     void setVelocity(float vel);
     float getVelocity();
@@ -29,9 +35,9 @@ public:
     bool positionMode;
     float velocitySetpoint;
     float positionSetpoint;
-    float dt;
-    float count2dist;
-    
+    const float dt;
+    const float count2dist;
+
     float velocityControl;
 };
 
