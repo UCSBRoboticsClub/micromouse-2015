@@ -2,6 +2,8 @@
 #include "Globals.h"
 #include "RadioTerminal.h"
 #include <functional>
+#include <cstring>
+#include <stdio.h>
 
 
 struct Parameter
@@ -50,11 +52,28 @@ IntervalTimer WatchHandler::timer;
 
 CmdHandler* watch(const char* input)
 {
-    
+    const char* s = std::strchr(input, ' ');
+    const int varListSize = (sizeof varList) / (sizeof varList[0]);
+
+    if (s != NULL)
     {
-        RadioTerminal::write("error reading input parameters");
-        return NULL;
+        ++s;
+        for (int i = 0; i < varListSize; ++i)
+        {
+            if (std::strncmp(s, varList[i].name, 8) == 0)
+                return new WatchHandler(varList[i].func);
+        }
     }
+
+    char buf[16];
+    RadioTerminal::write(s);
+    RadioTerminal::write("Usage: w <var>\nValid vars:");
+    for (int i = 0; i < varListSize; ++i)
+    {
+        snprintf(buf, 16, "\n  %s", varList[i].name);
+        RadioTerminal::write(buf);
+    }
+    return NULL;
 }
 
 
@@ -69,7 +88,7 @@ void WatchHandler::refresh()
 {
     char output[256];
 
-    sprintf(output, "\r         \r\r\r%4.4f", *watch);
+    sprintf(output, "\r         \r\r\r%4.4f", watchFun());
     RadioTerminal::write(output);
 }
 
@@ -78,3 +97,7 @@ void setupCommands()
 {
     RadioTerminal::addCommand("w", &watch);
 }
+
+
+// Workaround for teensyduino bug
+void std::__throw_bad_function_call() {};

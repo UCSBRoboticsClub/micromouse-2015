@@ -1,7 +1,6 @@
 #include <Encoder.h>
 #include <IntervalTimer.h>
 #include <SPI.h>
-#include <stdio.h>
 #include "Globals.h"
 #include "Songs.h"
 #include "RadioTerminal.h"
