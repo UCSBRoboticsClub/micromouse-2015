@@ -169,7 +169,7 @@ uint8_t VL6180X::getRegister(uint16_t regAddr)
     Wire.write(regAddr & 0xFF);
     Wire.endTransmission(I2C_NOSTOP);
     
-    Wire.requestFrom(address, 1);
+    Wire.requestFrom(address, 1, I2C_STOP);
     uint8_t data = Wire.read();
     
     interrupts();

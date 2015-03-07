@@ -1,8 +1,8 @@
 #include "Commands.h"
 #include "Globals.h"
 
-
-class WatchHandler : public CmdHandler
+/*
+ class WatchHandler : public CmdHandler
 {
 public:
     WatchHandler(float* w);
@@ -189,3 +189,4 @@ CmdHandler* dumplog(const char* input)
     
     return NULL;
 }
+*/

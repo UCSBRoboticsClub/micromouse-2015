@@ -7,8 +7,8 @@ ControlLoop::ControlLoop(float dt) :
     ki(0.f), 
     kd(0.f), 
     ierror(0.f), 
+    outputMin(-1.f), 
     outputMax(1.f), 
-    outputMin(-1.f),
     lastError(0.f)
 {
 }
@@ -40,7 +40,7 @@ void ControlLoop::setKd(float kd)
 }
 
 
-float ControlLoop::setDerivCutoffFreq(float freq)
+void ControlLoop::setDerivCutoffFreq(float freq)
 {
     derror.setCutoffFreq(freq, dt);
 }

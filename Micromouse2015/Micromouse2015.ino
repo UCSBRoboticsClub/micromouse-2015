@@ -1,5 +1,6 @@
 #include <Encoder.h>
 #include <IntervalTimer.h>
+#include <SPI.h>
 #include <stdio.h>
 #include "Globals.h"
 #include "Songs.h"
@@ -39,7 +40,7 @@ void setup()
 
     delay(1000);
     
-    playSong(recorder);
+    //playSong(recorder);
 }
 
 
@@ -48,36 +49,6 @@ void loop()
     char buf[256];
     snprintf(buf, 256, "%.4f, %.4f, %.4f\n", rightSensor.getDistance(), frontSensor.getDistance(), leftSensor.getDistance());
     Serial.write(buf);
-
-    if (frontSensor.getDistance() < 0.15)
-    {
-        rightWheel.setVelocity(-0.25f);
-        leftWheel.setVelocity(-0.5f);
-        digitalWrite(led1Pin, LOW);
-        digitalWrite(led2Pin, LOW);
-        tone(buzzerPin, 440, 300);
-    }
-    else if (leftSensor.getDistance() < 0.15)
-    {
-        rightWheel.setVelocity(0.f);
-        leftWheel.setVelocity(0.5f);
-        digitalWrite(led1Pin, LOW);
-        digitalWrite(led2Pin, HIGH);
-    }
-    else if (rightSensor.getDistance() < 0.15)
-    {
-        rightWheel.setVelocity(0.5f);
-        leftWheel.setVelocity(0.f);
-        digitalWrite(led1Pin, HIGH);
-        digitalWrite(led2Pin, LOW);
-    }
-    else
-    {
-        rightWheel.setVelocity(0.5f);
-        leftWheel.setVelocity(0.5f);
-        digitalWrite(led1Pin, HIGH);
-        digitalWrite(led2Pin, HIGH);
-    }
 
     if (digitalRead(nfaultPin) == LOW)
         tone(buzzerPin, 440, 300);

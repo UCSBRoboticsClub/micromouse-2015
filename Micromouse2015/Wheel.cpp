@@ -3,11 +3,11 @@
 
 
 Wheel::Wheel(int motPin1, int motPin2, int encPin1, int encPin2, float dt, float circumference, int cpr) :
+    velocityLoop(dt),
+    positionLoop(dt),
     motor(motPin1, motPin2),
     encoder(encPin1, encPin2),
     lastCount(0),
-    velocityLoop(dt),
-    positionLoop(dt),
     positionMode(false),
     velocitySetpoint(0.f),
     dt(dt),
