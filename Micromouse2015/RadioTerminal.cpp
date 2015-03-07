@@ -22,6 +22,7 @@ namespace RadioTerminal
     int _csnPin;
     int _cePin;
     int _irqPin;
+    bool useRadio;
     
     uint8_t channel = 56;
     uint32_t rxAddress = 0xd191bb;
@@ -56,29 +57,41 @@ namespace RadioTerminal
         _csnPin = csnPin;
         _cePin = cePin;
         _irqPin = irqPin;
-        
-        // Set up pins
-        pinMode(_csnPin, OUTPUT);
-        pinMode(_cePin, OUTPUT);
 
-        // Disable nRF24L01+
-        digitalWrite(_cePin, 0);
+        if (csnPin < 0 || cePin < 0 || irqPin < 0)
+        {
+            useRadio = false;
+        }
+        else
+        {
+            useRadio = true;
+            
+            // Set up pins
+            pinMode(_csnPin, OUTPUT);
+            pinMode(_cePin, OUTPUT);
+            pinMode(_irqPin, OUTPUT);
+
+            // Disable nRF24L01+
+            digitalWrite(_cePin, 0);
         
-        // Disable chip select
-        digitalWrite(_csnPin, 1);
+            // Disable chip select
+            digitalWrite(_csnPin, 1);
         
-        // Set up SPI
-        SPI.begin();
-        SPI.setClockDivider(SPI_CLOCK_DIV8);
+            // Set up SPI
+            SPI.begin();
+            SPI.setClockDivider(SPI_CLOCK_DIV8);
         
-        // Set up IRQ
-        pinMode(_irqPin, INPUT);
-        attachInterrupt(irqPin, receive, FALLING);
+            // Set up IRQ
+            pinMode(_irqPin, INPUT);
+            attachInterrupt(irqPin, receive, FALLING);
         
-        // These values need to be initialized
-        numCommands = 0;
-        runningCmd = NULL;
-        inputBuffer[0] = '\0';
+            // These values need to be initialized
+            numCommands = 0;
+            runningCmd = NULL;
+            inputBuffer[0] = '\0';
+
+            reset();
+        }
         
         #ifdef USB_SERIAL_ENABLE
         Serial.begin(115200);
@@ -95,7 +108,17 @@ namespace RadioTerminal
         digitalWrite(_cePin, 0);
         
         // Configure registers
-        setRegister(CONFIG, CONFIG_MASK_TX_DS | CONFIG_MASK_MAX_RT | CONFIG_EN_CRC | CONFIG_PWR_UP | CONFIG_PRIM_RX);
+        int config = CONFIG_MASK_TX_DS | CONFIG_MASK_MAX_RT | CONFIG_EN_CRC | CONFIG_PWR_UP | CONFIG_PRIM_RX;
+        setRegister(CONFIG, config);
+
+        // Check whether radio is present/working
+        if (getRegister(CONFIG) != config)
+        {
+            useRadio = false;
+            return;
+        }
+
+        // Configure remaining registers
         setRegister(EN_AA, 0x00);
         setRegister(EN_RXADDR, ERX_P1);
         setRegister(SETUP_AW, SETUP_AW_3BYTES);
@@ -159,35 +182,38 @@ namespace RadioTerminal
 
     void transmit(uint32_t data)
     {
-        // Put into standby
-        digitalWrite(_cePin, 0);
+        if (useRadio)
+        {
+            // Put into standby
+            digitalWrite(_cePin, 0);
         
-        // Configure for PTX
-        int config = getRegister(CONFIG);
-        config &= ~CONFIG_PRIM_RX;
-        setRegister(CONFIG, config);
+            // Configure for PTX
+            int config = getRegister(CONFIG);
+            config &= ~CONFIG_PRIM_RX;
+            setRegister(CONFIG, config);
         
-        // Write packet data
-        digitalWrite(_csnPin, 0);
-        SPI.transfer(W_TX_PAYLOAD);
-        SPI.transfer( (data>>0) & 0xff );
-        SPI.transfer( (data>>8) & 0xff );
-        SPI.transfer( (data>>16) & 0xff );
-        SPI.transfer( (data>>24) & 0xff );
-        digitalWrite(_csnPin, 1);
+            // Write packet data
+            digitalWrite(_csnPin, 0);
+            SPI.transfer(W_TX_PAYLOAD);
+            SPI.transfer( (data>>0) & 0xff );
+            SPI.transfer( (data>>8) & 0xff );
+            SPI.transfer( (data>>16) & 0xff );
+            SPI.transfer( (data>>24) & 0xff );
+            digitalWrite(_csnPin, 1);
         
-        // Put into PTX
-        digitalWrite(_cePin, 1);
-        delayMicroseconds(TIMING_Tstby2a);
-        digitalWrite(_cePin, 0);
+            // Put into PTX
+            digitalWrite(_cePin, 1);
+            delayMicroseconds(TIMING_Tstby2a);
+            digitalWrite(_cePin, 0);
         
-        // Wait for message transmission and put into PRX
-        delayMicroseconds(TIMING_Toa);
-        config = getRegister(CONFIG);
-        config |= CONFIG_PRIM_RX;
-        setRegister(CONFIG, config);
-        setRegister(STATUS, STATUS_TX_DS);
-        digitalWrite(_cePin, 1);
+            // Wait for message transmission and put into PRX
+            delayMicroseconds(TIMING_Toa);
+            config = getRegister(CONFIG);
+            config |= CONFIG_PRIM_RX;
+            setRegister(CONFIG, config);
+            setRegister(STATUS, STATUS_TX_DS);
+            digitalWrite(_cePin, 1);
+        }
         
         #ifdef USB_SERIAL_ENABLE
         Serial.write( (data>>0) & 0xff );

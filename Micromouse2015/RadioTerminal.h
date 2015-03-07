@@ -19,7 +19,7 @@ public:
 
 namespace RadioTerminal
 {
-    void initialize(int csnPin, int cePin, int irqPin);
+    void initialize(int csnPin = -1, int cePin = -1, int irqPin = -1);
     void reset();
     void addCommand(const char* cmdString, CmdHandler* (*fpointer)(const char*) );
     void terminateCmd();

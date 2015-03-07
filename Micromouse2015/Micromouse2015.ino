@@ -57,8 +57,10 @@ void loop()
 
 void controlLoop()
 {
+    digitalWrite(led1Pin, HIGH);
     leftWheel.update();
     rightWheel.update();
+    digitalWrite(led1Pin, LOW);
 }
 
 

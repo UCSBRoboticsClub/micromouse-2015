@@ -28,6 +28,8 @@ Parameter paramList[] =
     {"lw.kp", &leftWheel.velocityLoop.kp},
     {"lw.ki", &leftWheel.velocityLoop.ki},
     {"lw.kd", &leftWheel.velocityLoop.kd},
+    {"rw.vs", &rightWheel.velocitySetpoint},
+    {"lw.vs", &leftWheel.velocitySetpoint},
 };
 
 
