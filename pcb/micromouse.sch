@@ -3641,7 +3641,6 @@ at 30/07/2012 11:22:31</description>
 <part name="GND8" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
 <part name="SUPPLY10" library="SparkFun-Aesthetics" deviceset="3.3V" device=""/>
 <part name="R5" library="SparkFun-Resistors" deviceset="RESISTOR" device="0603" value="33k"/>
-<part name="SUPPLY11" library="SparkFun-Aesthetics" deviceset="3.3V" device=""/>
 <part name="GND9" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
 <part name="GND10" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
 <part name="C5" library="SparkFun-Capacitors" deviceset="CAP" device="0603-CAP" value="0.01uF"/>
@@ -3675,6 +3674,7 @@ at 30/07/2012 11:22:31</description>
 <part name="R8" library="SparkFun-Resistors" deviceset="RESISTOR" device="0603" value="100K"/>
 <part name="R9" library="SparkFun-Resistors" deviceset="RESISTOR" device="0603" value="132"/>
 <part name="U3" library="Microchip_By_element14_Batch_1" deviceset="MCP1703T-3002E/CB" device="" value="MCP1703T-2802E/CB"/>
+<part name="SUPPLY11" library="SparkFun-Aesthetics" deviceset="VDD" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -3715,7 +3715,6 @@ at 30/07/2012 11:22:31</description>
 <instance part="GND8" gate="1" x="213.36" y="111.76"/>
 <instance part="SUPPLY10" gate="G$1" x="220.98" y="111.76"/>
 <instance part="R5" gate="G$1" x="203.2" y="106.68" rot="R270"/>
-<instance part="SUPPLY11" gate="G$1" x="203.2" y="114.3"/>
 <instance part="GND9" gate="1" x="185.42" y="71.12"/>
 <instance part="GND10" gate="1" x="144.78" y="71.12"/>
 <instance part="C5" gate="G$1" x="167.64" y="106.68"/>
@@ -3749,6 +3748,7 @@ at 30/07/2012 11:22:31</description>
 <instance part="R8" gate="G$1" x="243.84" y="20.32" rot="R270"/>
 <instance part="R9" gate="G$1" x="236.22" y="27.94"/>
 <instance part="U3" gate="A" x="106.68" y="129.54"/>
+<instance part="SUPPLY11" gate="VDD" x="203.2" y="114.3"/>
 </instances>
 <busses>
 </busses>
@@ -3956,6 +3956,11 @@ at 30/07/2012 11:22:31</description>
 <junction x="149.86" y="88.9"/>
 <pinref part="C4" gate="G$1" pin="1"/>
 </segment>
+<segment>
+<pinref part="R5" gate="G$1" pin="1"/>
+<wire x1="203.2" y1="114.3" x2="203.2" y2="111.76" width="0.1524" layer="91"/>
+<pinref part="SUPPLY11" gate="VDD" pin="VDD"/>
+</segment>
 </net>
 <net name="3.3V" class="0">
 <segment>
@@ -3976,11 +3981,6 @@ at 30/07/2012 11:22:31</description>
 <junction x="220.98" y="101.6"/>
 <pinref part="J1" gate="G$1" pin="VCC"/>
 <wire x1="223.52" y1="101.6" x2="220.98" y2="101.6" width="0.1524" layer="91"/>
-</segment>
-<segment>
-<pinref part="R5" gate="G$1" pin="1"/>
-<pinref part="SUPPLY11" gate="G$1" pin="3.3V"/>
-<wire x1="203.2" y1="114.3" x2="203.2" y2="111.76" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="A2" gate="G$1" pin="VCC"/>
