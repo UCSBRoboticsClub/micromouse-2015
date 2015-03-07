@@ -5,6 +5,7 @@
 #include <IntervalTimer.h>
 #include <cctype>
 #include <cstring>
+#include <stdio.h>
 
 
 namespace RadioTerminal
@@ -142,7 +143,7 @@ namespace RadioTerminal
             cmdList[numCommands].cmdString[INPUT_BUFFER_MAX - 1] = '\0'; 
             cmdList[numCommands].stringLength = strlen(cmdList[numCommands].cmdString);
             cmdList[numCommands].fpointer = fpointer;
-            numCommands++;
+            ++numCommands;
         }
         else
         {
@@ -310,7 +311,7 @@ namespace RadioTerminal
                 bool matchFound = false; // Initialize flag
                 
                 // Try to match the input string to a command
-                for (int i = 0; i < NUM_COMMANDS_MAX; i++)
+                for (int i = 0; i < numCommands; ++i)
                 {
                     if (cmdList[i].stringLength && !strncmp(inputBuffer, cmdList[i].cmdString, cmdList[i].stringLength))
                     {
@@ -335,7 +336,13 @@ namespace RadioTerminal
                 else
                 {
                     // No match was found
-                    write("unrecognized command");
+                    write("Valid commands:");
+                    char buf[32];
+                    for (int i = 0; i < numCommands; ++i)
+                    {
+                        snprintf(buf, 16, "\n  %s", cmdList[i].cmdString);
+                        write(buf);
+                    }
                     terminateCmd();
                 }
             }

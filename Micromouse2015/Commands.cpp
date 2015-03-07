@@ -60,17 +60,17 @@ CmdHandler* watch(const char* input)
         ++s;
         for (int i = 0; i < varListSize; ++i)
         {
-            if (std::strncmp(s, varList[i].name, 8) == 0)
+            if (std::strncmp(s, varList[i].name, 32) == 0)
                 return new WatchHandler(varList[i].func);
         }
     }
 
-    char buf[16];
     RadioTerminal::write(s);
     RadioTerminal::write("Usage: w <var>\nValid vars:");
+    char buf[16];
     for (int i = 0; i < varListSize; ++i)
     {
-        snprintf(buf, 16, "\n  %s", varList[i].name);
+        snprintf(buf, 32, "\n  %s", varList[i].name);
         RadioTerminal::write(buf);
     }
     return NULL;
