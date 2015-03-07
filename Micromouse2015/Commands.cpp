@@ -3,6 +3,7 @@
 #include "RadioTerminal.h"
 #include <functional>
 #include <cstring>
+#include <stdlib.h>
 #include <stdio.h>
 
 
@@ -21,18 +22,24 @@ struct Variable
 
 Parameter paramList[] =
 {
+    {"rw.kp", &rightWheel.velocityLoop.kp},
+    {"rw.ki", &rightWheel.velocityLoop.ki},
+    {"rw.kd", &rightWheel.velocityLoop.kd},
+    {"lw.kp", &leftWheel.velocityLoop.kp},
+    {"lw.ki", &leftWheel.velocityLoop.ki},
+    {"lw.kd", &leftWheel.velocityLoop.kd},
 };
 
 
 Variable varList[] =
 {
-    {"rv", [&]{ return rightWheel.getVelocity(); } },
-    {"lv", [&]{ return leftWheel.getVelocity(); } },
-    {"rc", [&]{ return rightWheel.velocityControl; } },
-    {"lc", [&]{ return leftWheel.velocityControl; } },
-    {"rd", [&]{ return rightSensor.getDistance(); } },
-    {"ld", [&]{ return leftSensor.getDistance(); } },
-    {"fd", [&]{ return frontSensor.getDistance(); } },
+    {"rw.v", [&]{ return rightWheel.getVelocity(); }},
+    {"lw.v", [&]{ return leftWheel.getVelocity(); }},
+    {"rw.vc", [&]{ return rightWheel.velocityControl; }},
+    {"lw.vc", [&]{ return leftWheel.velocityControl; }},
+    {"rs.d", [&]{ return rightSensor.getDistance(); }},
+    {"ls.d", [&]{ return leftSensor.getDistance(); }},
+    {"fs.d", [&]{ return frontSensor.getDistance(); }},
 };
 
 
@@ -52,10 +59,11 @@ IntervalTimer WatchHandler::timer;
 
 CmdHandler* watch(const char* input)
 {
-    const char* s = std::strchr(input, ' ');
+    char buf[32];
     const int varListSize = (sizeof varList) / (sizeof varList[0]);
 
-    if (s != NULL)
+    const char* s = std::strchr(input, ' ');
+    if (s != nullptr)
     {
         ++s;
         for (int i = 0; i < varListSize; ++i)
@@ -65,15 +73,13 @@ CmdHandler* watch(const char* input)
         }
     }
 
-    RadioTerminal::write(s);
     RadioTerminal::write("Usage: w <var>\nValid vars:");
-    char buf[16];
     for (int i = 0; i < varListSize; ++i)
     {
         snprintf(buf, 32, "\n  %s", varList[i].name);
         RadioTerminal::write(buf);
     }
-    return NULL;
+    return nullptr;
 }
 
 
@@ -93,9 +99,49 @@ void WatchHandler::refresh()
 }
 
 
+CmdHandler* set(const char* input)
+{
+    char buf[32];
+    const int paramListSize = (sizeof paramList) / (sizeof paramList[0]);
+    
+    const char* s = std::strchr(input, ' ');
+    if (s != nullptr)
+    {
+        const char* s2 = std::strchr(++s, ' ');
+        if (s2 != nullptr)
+        {
+            int pslen = s2 - s;
+            float value = strtof(++s2, nullptr);
+            
+            for (int i = 0; i < paramListSize; ++i)
+            {
+                if (std::strncmp(s, paramList[i].name, pslen) == 0)
+                {
+                    *(paramList[i].var) = value;
+                    snprintf(buf, 32, "%s = %4.4f",
+                             paramList[i].name,
+                             *(paramList[i].var));
+                    RadioTerminal::write(buf);
+                    return nullptr;
+                }
+            }
+        }
+    }
+    
+    RadioTerminal::write("Usage: s <param> <value>\nValid parameters:");
+    for (int i = 0; i < paramListSize; ++i)
+    {
+        snprintf(buf, 32, "\n  %s", paramList[i].name);
+        RadioTerminal::write(buf);
+    }
+    return nullptr;
+}
+
+
 void setupCommands()
 {
     RadioTerminal::addCommand("w", &watch);
+    RadioTerminal::addCommand("s", &set);
 }
 
 

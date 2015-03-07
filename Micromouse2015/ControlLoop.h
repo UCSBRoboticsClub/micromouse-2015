@@ -16,11 +16,12 @@ public:
     void setDerivCutoffFreq(float freq);
     void setOutputLimits(float min, float max);
     
-private:
-    const float dt;
     float kp;
     float ki;
     float kd;
+    
+private:
+    const float dt;
     float ierror;
     LowPass derror;
     float outputMin;

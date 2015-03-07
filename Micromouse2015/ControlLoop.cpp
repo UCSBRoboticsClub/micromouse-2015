@@ -2,10 +2,10 @@
 
 
 ControlLoop::ControlLoop(float dt) : 
-    dt(dt), 
     kp(0.f), 
     ki(0.f), 
     kd(0.f), 
+    dt(dt), 
     ierror(0.f), 
     outputMin(-1.f), 
     outputMax(1.f), 
