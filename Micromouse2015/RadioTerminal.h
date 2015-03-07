@@ -30,4 +30,8 @@ namespace RadioTerminal
     extern uint32_t txAddress;
 };
 
+
+void serialEvent();
+
+
 #endif // RADIOTERMINAL_H

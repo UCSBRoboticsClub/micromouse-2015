@@ -41,8 +41,7 @@ namespace RadioTerminal
     int numCommands;
     
     #ifdef USB_SERIAL_ENABLE
-    void serialReceive();
-    IntervalTimer serialRxTimer;
+    void serialEvent();
     #endif
 
 
@@ -77,7 +76,6 @@ namespace RadioTerminal
         
         #ifdef USB_SERIAL_ENABLE
         Serial.begin(115200);
-        serialRxTimer.begin(&serialReceive, 100000);
         #endif
     }
 
@@ -139,7 +137,9 @@ namespace RadioTerminal
         if (numCommands < NUM_COMMANDS_MAX)
         {
             strncpy(cmdList[numCommands].cmdString, cmdString, INPUT_BUFFER_MAX);
-            cmdList[numCommands].cmdString[INPUT_BUFFER_MAX - 1] = '\0'; // Make sure that the command string is null terminated
+            
+            // Make sure that the command string is null terminated
+            cmdList[numCommands].cmdString[INPUT_BUFFER_MAX - 1] = '\0'; 
             cmdList[numCommands].stringLength = strlen(cmdList[numCommands].cmdString);
             cmdList[numCommands].fpointer = fpointer;
             numCommands++;
@@ -258,7 +258,8 @@ namespace RadioTerminal
             switch(pipe)
             {
             case STATUS_RN_P_NO_P1:
-                // Break data message into four chars and send to terminal, stop if a null terminator is found
+                /* Break data message into four chars and send to terminal,
+                   stop if a null terminator is found */
                 for (int i = 0; i < 4; ++i)
                 {
                     if ( ((data>>(8*i)) & 0xff) == '\0')
@@ -275,19 +276,6 @@ namespace RadioTerminal
         // Reset IRQ pin
         setRegister(STATUS, STATUS_RX_DR);
     }
-    
-    
-    #ifdef USB_SERIAL_ENABLE
-    void serialReceive()
-    {
-        while (Serial.available())
-        {
-            int c = Serial.read();
-            if (c != -1)
-                receiveChar(c);
-        }
-    }
-    #endif
     
     
     void receiveChar(char c)
@@ -317,7 +305,7 @@ namespace RadioTerminal
             }
             else if (c == '\n' || c == '\r') // Execute input command
             {
-                transmit('\n');
+                write("\n");
                 
                 bool matchFound = false; // Initialize flag
                 
@@ -335,10 +323,12 @@ namespace RadioTerminal
                 
                 if (matchFound)
                 {
-                    // If the command finishes immediately, it should return null instead of a pointer to a CmdHandler
+                    /* If the command finishes immediately, it should return
+                       null instead of a pointer to a CmdHandler */
                     if (runningCmd == NULL)
                     {
-                        // Terminate the command here, because there is no CmdHandler to terminate it later
+                        /* Terminate the command here, because there is no
+                           CmdHandler to terminate it later */
                         terminateCmd();
                     }
                 }
@@ -376,6 +366,7 @@ namespace RadioTerminal
     {
         const int maxsize = 256;
         int i = 0;
+        bool crFlag = false;
         
         // Send string across radio link, grouping characters into batches
         while (i < maxsize)
@@ -387,7 +378,23 @@ namespace RadioTerminal
             {
                 if (string[i + j] == '\0' || i + j >= maxsize)
                     break;
-                data |= uint32_t(string[i + j]) << 8 * j;
+                if (string[i + j] == '\n')
+                {
+                    crFlag = !crFlag;
+                    if (crFlag)
+                    {
+                        data |= uint32_t('\r') << 8 * j;
+                        --i;
+                    }
+                    else
+                    {
+                        data |= uint32_t('\n') << 8 * j;
+                    }
+                }
+                else
+                {
+                    data |= uint32_t(string[i + j]) << 8 * j;
+                }
                 ++j;
             }
             
@@ -399,3 +406,16 @@ namespace RadioTerminal
         }
     }
 }
+
+    
+#ifdef USB_SERIAL_ENABLE
+void serialEvent()
+{
+    while (Serial.available())
+    {
+        int c = Serial.read();
+        if (c != -1)
+            RadioTerminal::receiveChar(c);
+    }
+}
+#endif

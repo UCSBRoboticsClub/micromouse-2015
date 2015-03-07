@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include "Globals.h"
 #include "Songs.h"
+#include "RadioTerminal.h"
+#include "Commands.h"
 
 
 IntervalTimer controlTimer;
@@ -18,9 +20,7 @@ void setup()
     pinMode(buzzerPin, OUTPUT);
     pinMode(led1Pin, OUTPUT);
     pinMode(led2Pin, OUTPUT);
-    pinMode(nfaultPin, INPUT_PULLUP);    
-    
-    Serial.begin(115200);
+    pinMode(nfaultPin, INPUT_PULLUP);
     
     leftWheel.velocityLoop.setTuning(10.f, 20.f, 0.02f);
     rightWheel.velocityLoop.setTuning(10.f, 20.f, 0.02f);
@@ -38,6 +38,9 @@ void setup()
     sensorTimer.begin(sensorLoop, sensorPeriodUs);
     sensorTimer.priority(160);
 
+    RadioTerminal::initialize(10, 9, 8);
+    setupCommands();
+
     delay(1000);
     
     //playSong(recorder);
@@ -46,10 +49,6 @@ void setup()
 
 void loop()
 {
-    char buf[256];
-    snprintf(buf, 256, "%.4f, %.4f, %.4f\n", rightSensor.getDistance(), frontSensor.getDistance(), leftSensor.getDistance());
-    Serial.write(buf);
-
     if (digitalRead(nfaultPin) == LOW)
         tone(buzzerPin, 440, 300);
     

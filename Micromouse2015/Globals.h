@@ -23,7 +23,7 @@ const unsigned int controlPeriodUs = 1000000 / controlFreq;
 const float dt = 1.f / controlFreq;
 
 const float wheelCirc = 0.1f;
-const int ppr = 1000;
+const int ppr = 1200;
 
 const unsigned int sensorFreq = 50; // Hz
 const unsigned int sensorPeriodUs = 1000000 / sensorFreq;
