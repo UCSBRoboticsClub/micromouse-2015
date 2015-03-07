@@ -13,8 +13,9 @@ public:
     void setKp(float kp);
     void setKi(float ki);
     void setKd(float kd);
-    void setDerivCutoffFreq(float freq);
+    void setDerivLowpassFreq(float freq);
     void setOutputLimits(float min, float max);
+    void zeroIntegral();
     
     float kp;
     float ki;
@@ -24,6 +25,7 @@ private:
     const float dt;
     float ierror;
     LowPass derror;
+    LowPass ierrorlp;
     float outputMin;
     float outputMax;
     float lastError;

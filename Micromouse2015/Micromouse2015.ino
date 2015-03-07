@@ -23,8 +23,8 @@ void setup()
     
     leftWheel.velocityLoop.setTuning(10.f, 20.f, 0.02f);
     rightWheel.velocityLoop.setTuning(10.f, 20.f, 0.02f);
-    leftWheel.velocityLoop.setDerivCutoffFreq(30.f);
-    rightWheel.velocityLoop.setDerivCutoffFreq(30.f);
+    leftWheel.velocityLoop.setDerivLowpassFreq(30.f);
+    rightWheel.velocityLoop.setDerivLowpassFreq(30.f);
 
     controlTimer.begin(controlLoop, controlPeriodUs);
     controlTimer.priority(144);

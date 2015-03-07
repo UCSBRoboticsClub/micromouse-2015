@@ -99,6 +99,38 @@ void WatchHandler::refresh()
 }
 
 
+CmdHandler* print(const char* input)
+{
+    char buf[32];
+    const int paramListSize = (sizeof paramList) / (sizeof paramList[0]);
+    
+    const char* s = std::strchr(input, ' ');
+    if (s != nullptr)
+    {
+        ++s;
+        for (int i = 0; i < paramListSize; ++i)
+        {
+            if (std::strncmp(s, paramList[i].name, 32) == 0)
+            {
+                snprintf(buf, 32, "%s = %4.4f",
+                         paramList[i].name,
+                         *(paramList[i].var));
+                RadioTerminal::write(buf);
+                return nullptr;
+            }
+        }
+    }
+    
+    RadioTerminal::write("Usage: p <param>\nValid parameters:");
+    for (int i = 0; i < paramListSize; ++i)
+    {
+        snprintf(buf, 32, "\n  %s", paramList[i].name);
+        RadioTerminal::write(buf);
+    }
+    return nullptr;
+}
+
+
 CmdHandler* set(const char* input)
 {
     char buf[32];
@@ -141,6 +173,7 @@ CmdHandler* set(const char* input)
 void setupCommands()
 {
     RadioTerminal::addCommand("w", &watch);
+    RadioTerminal::addCommand("p", &print);
     RadioTerminal::addCommand("s", &set);
 }
 

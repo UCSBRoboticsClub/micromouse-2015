@@ -40,7 +40,7 @@ void ControlLoop::setKd(float kd)
 }
 
 
-void ControlLoop::setDerivCutoffFreq(float freq)
+void ControlLoop::setDerivLowpassFreq(float freq)
 {
     derror.setCutoffFreq(freq, dt);
 }
@@ -50,6 +50,12 @@ void ControlLoop::setOutputLimits(float min, float max)
 {
     outputMin = min;
     outputMax = max;
+}
+
+
+void ControlLoop::zeroIntegral()
+{
+    ierror = 0;
 }
 
 
