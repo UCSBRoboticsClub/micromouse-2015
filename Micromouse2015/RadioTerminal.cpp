@@ -26,9 +26,14 @@ namespace RadioTerminal
     uint8_t channel = 56;
     uint32_t rxAddress = 0xd191bb;
     uint32_t txAddress = 0xe6e1fa;
-    
-    char inputBuffer[INPUT_BUFFER_MAX];
+
+    char inputBufferA[INPUT_BUFFER_MAX];
+    char inputBufferB[INPUT_BUFFER_MAX];
+    char* inputBuffer = inputBufferA;
     CmdHandler* runningCmd;
+    uint8_t escapeMode = 0;
+    int bufPos = 0;
+    int bufLen = 0;
     
     struct cmd
     {
@@ -284,24 +289,99 @@ namespace RadioTerminal
         // Check if a command is currently running
         if (runningCmd == NULL) // No command is currently running
         {
-            int len = strlen(inputBuffer);
-            
-            if (isprint(c)) // If c is a printable character
+            if (escapeMode == 1) // Check for second character of escape code
             {
-                if (len < INPUT_BUFFER_MAX - 1)
+                if (c == '[')
+                    escapeMode = 2;
+                else
+                    escapeMode = 0;
+            }
+            else if (escapeMode > 1) // Handle escape codes
+            {
+                switch (c)
                 {
-                    // Add the new character to the input buffer and display it
-                    inputBuffer[len] = c;
-                    inputBuffer[len + 1] = '\0';
-                    transmit(c);
+                case 'A':
+                case 'B':
+                    inputBuffer = (inputBuffer == inputBufferA) ? inputBufferB : inputBufferA;
+                    write("\r                                        \r> ");
+                    write(inputBuffer);
+                    bufLen = strlen(inputBuffer);
+                    bufPos = bufLen;
+                    break;
+                case 'C':
+                    if (bufPos < bufLen)
+                    {
+                        transmit(inputBuffer[bufPos]);
+                        ++bufPos;
+                    }
+                    break;
+                case 'D':
+                    if (bufPos > 0)
+                    {
+                        transmit('\b');
+                        --bufPos;
+                    }
+                    break;
+                }
+                
+                escapeMode = 0;
+            }
+            else if (isprint(c)) // If c is a printable character
+            {
+                // Add the new character to the input buffer and display it
+                if (bufLen < INPUT_BUFFER_MAX - 1)
+                {
+                    if (bufPos >= bufLen)
+                    {
+                    
+                        inputBuffer[bufLen] = c;
+                        inputBuffer[++bufLen] = '\0';
+                        bufPos = bufLen;
+                        transmit(c);
+                    }
+                    else
+                    {
+                        ++bufLen;
+                        for (int i = bufLen; i > bufPos; --i)
+                            inputBuffer[i] = inputBuffer[i-1];
+                        inputBuffer[bufPos++] = c;
+                        write(inputBuffer + bufPos - 1);
+
+                        int numchars = bufLen - bufPos;
+                        for (; numchars / 4 > 0; numchars -= 4)
+                            write("\b\b\b\b");
+                        for (; numchars > 0; --numchars)
+                            transmit('\b');
+                    }
                 }
             }
             else if (c == '\b' || c == 127) // Backspace or DEL
             {
-                if (len > 0)
+                if (bufPos > 0)
                 {
-                    inputBuffer[len - 1] = '\0';
-                    write("\b \b");
+                    if (bufPos == bufLen)
+                    {
+                        inputBuffer[--bufPos] = '\0';
+                        --bufLen;
+                        write("\b \b");
+                    }
+                    else
+                    {
+                        --bufPos;
+                        --bufLen;
+                        transmit('\b');
+                        for (int i = bufPos; i <= bufLen; ++i)
+                            inputBuffer[i] = inputBuffer[i+1];
+                        
+                        write(inputBuffer + bufPos);
+                        write("  \b\b");
+                        
+                        int numchars = bufLen - bufPos;
+                        for (; numchars / 4 > 0; numchars -= 4)
+                            write("\b\b\b\b");
+                        for (; numchars > 0; --numchars)
+                            transmit('\b');
+                    }
                 }
             }
             else if (c == '\n' || c == '\r') // Execute input command
@@ -313,7 +393,10 @@ namespace RadioTerminal
                 // Try to match the input string to a command
                 for (int i = 0; i < numCommands; ++i)
                 {
-                    if (cmdList[i].stringLength && !strncmp(inputBuffer, cmdList[i].cmdString, cmdList[i].stringLength))
+                    if (cmdList[i].stringLength &&
+                        !strncmp(inputBuffer,
+                                 cmdList[i].cmdString,
+                                 cmdList[i].stringLength))
                     {
                         // Match found, call the associated command
                         runningCmd = cmdList[i].fpointer(inputBuffer);
@@ -340,13 +423,17 @@ namespace RadioTerminal
                     char buf[32];
                     for (int i = 0; i < numCommands; ++i)
                     {
-                        snprintf(buf, 16, "\n  %s", cmdList[i].cmdString);
+                        snprintf(buf, 32, "\n  %s", cmdList[i].cmdString);
                         write(buf);
                     }
                     terminateCmd();
                 }
             }
-            // Control characters other than \n, \b, and 127 (DEL) are ignored
+            else if (c == 27)
+            {
+                escapeMode = 1;
+            }
+            // Control characters other than \n, \b, 27 (ESC), and 127 (DEL) are ignored
         }
         else // A command is running, so pass the character to the CmdHandler
         {
@@ -365,6 +452,9 @@ namespace RadioTerminal
         }
         
         write("\n> ");
+        inputBuffer = (inputBuffer == inputBufferA) ? inputBufferB : inputBufferA;
+        bufPos = 0;
+        bufLen = 0;
         inputBuffer[0] = '\0'; // Clear the input buffer
     }
 
