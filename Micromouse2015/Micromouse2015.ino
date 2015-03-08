@@ -40,7 +40,7 @@ void setup()
     RadioTerminal::initialize(10, 9, 8);
     setupCommands();
 
-    playSong(mortalkombat);
+    playSong(recorder);
 }
 
 
