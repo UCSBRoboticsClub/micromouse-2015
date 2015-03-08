@@ -22,24 +22,6 @@ void ControlLoop::setTuning(float kp, float ki, float kd)
 }
 
 
-void ControlLoop::setKp(float kp)
-{
-    this->kp = kp;
-}
-
-
-void ControlLoop::setKi(float ki)
-{
-    this->ki = ki;
-}
-
-
-void ControlLoop::setKd(float kd)
-{
-    this->kd = kd;
-}
-
-
 void ControlLoop::setDerivLowpassFreq(float freq)
 {
     derror.setCutoffFreq(freq, dt);

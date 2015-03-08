@@ -10,9 +10,6 @@ public:
     ControlLoop(float dt);
     float update(float error, float feedForward = 0.f);
     void setTuning(float kp, float ki, float kd);
-    void setKp(float kp);
-    void setKi(float ki);
-    void setKd(float kd);
     void setDerivLowpassFreq(float freq);
     void setOutputLimits(float min, float max);
     void zeroIntegral();

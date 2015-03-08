@@ -20,7 +20,7 @@ struct Variable
 };
 
 
-Parameter paramList[] =
+const Parameter paramList[] =
 {
     {"rw.kp", &rightWheel.velocityLoop.kp},
     {"rw.ki", &rightWheel.velocityLoop.ki},
@@ -33,7 +33,7 @@ Parameter paramList[] =
 };
 
 
-Variable varList[] =
+const Variable varList[] =
 {
     {"rw.v", [&]{ return rightWheel.getVelocity(); }},
     {"lw.v", [&]{ return leftWheel.getVelocity(); }},
