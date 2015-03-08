@@ -37,10 +37,10 @@ void setup()
     sensorTimer.begin(sensorLoop, sensorPeriodUs);
     sensorTimer.priority(160);
 
-    RadioTerminal::initialize(10, 9, 8);
+    RadioTerminal::initialize();
     setupCommands();
 
-    playSong(recorder);
+    playSong(mortalkombat);
 }
 
 
@@ -55,10 +55,10 @@ void loop()
 
 void controlLoop()
 {
-    digitalWrite(led1Pin, HIGH);
+    rled(1);
     leftWheel.update();
     rightWheel.update();
-    digitalWrite(led1Pin, LOW);
+    rled(0);
 }
 
 

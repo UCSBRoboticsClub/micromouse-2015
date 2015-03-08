@@ -9,7 +9,7 @@ class VL6180X
 public:
     VL6180X(int enablePin);
     bool init(uint8_t address);
-    uint8_t poll();
+    void poll();
     float getDistance();
 
     static void setup();

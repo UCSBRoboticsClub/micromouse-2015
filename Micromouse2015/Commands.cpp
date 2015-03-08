@@ -1,6 +1,8 @@
 #include "Commands.h"
 #include "Globals.h"
 #include "RadioTerminal.h"
+#undef min
+#undef max
 #include <functional>
 #include <cstring>
 #include <stdlib.h>
@@ -180,5 +182,5 @@ void setupCommands()
 }
 
 
-// Workaround for teensyduino bug
-void std::__throw_bad_function_call() {};
+// Workaround for teensyduino/libstdc++ bug
+void std::__throw_bad_function_call() { while(true) {} };

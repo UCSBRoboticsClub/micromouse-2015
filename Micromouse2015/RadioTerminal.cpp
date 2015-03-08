@@ -10,6 +10,14 @@
 
 namespace RadioTerminal
 {
+    // Pin definitions
+    const int csnPin = 10;
+    const int cePin = 9;
+    const int irqPin = 8;
+
+    // Radio on by default?
+    bool useRadio = true;
+    
     // Internal functions and variables
     int getRegister(int address);
     int getStatus();
@@ -19,11 +27,6 @@ namespace RadioTerminal
     void transmit(uint32_t data);
     void receiveChar(char c);
 
-    int _csnPin;
-    int _cePin;
-    int _irqPin;
-    bool useRadio;
-    
     uint8_t channel = 56;
     uint32_t rxAddress = 0xd191bb;
     uint32_t txAddress = 0xe6e1fa;
@@ -52,37 +55,27 @@ namespace RadioTerminal
     #endif
 
 
-    void initialize(int csnPin, int cePin, int irqPin)
+    void initialize()
     {
-        _csnPin = csnPin;
-        _cePin = cePin;
-        _irqPin = irqPin;
-
-        if (csnPin < 0 || cePin < 0 || irqPin < 0)
+        if (useRadio)
         {
-            useRadio = false;
-        }
-        else
-        {
-            useRadio = true;
-            
             // Set up pins
-            pinMode(_csnPin, OUTPUT);
-            pinMode(_cePin, OUTPUT);
-            pinMode(_irqPin, OUTPUT);
+            pinMode(csnPin, OUTPUT);
+            pinMode(cePin, OUTPUT);
+            pinMode(irqPin, OUTPUT);
 
             // Disable nRF24L01+
-            digitalWrite(_cePin, 0);
+            digitalWriteFast(cePin, 0);
         
             // Disable chip select
-            digitalWrite(_csnPin, 1);
+            digitalWriteFast(csnPin, 1);
         
             // Set up SPI
             SPI.begin();
             SPI.setClockDivider(SPI_CLOCK_DIV8);
         
             // Set up IRQ
-            pinMode(_irqPin, INPUT);
+            pinMode(irqPin, INPUT);
             attachInterrupt(irqPin, receive, FALLING);
         
             // These values need to be initialized
@@ -105,7 +98,7 @@ namespace RadioTerminal
         delayMicroseconds(TIMING_Tpor);
 
         // Put into standby
-        digitalWrite(_cePin, 0);
+        digitalWriteFast(cePin, 0);
         
         // Configure registers
         int config = CONFIG_MASK_TX_DS | CONFIG_MASK_MAX_RT | CONFIG_EN_CRC | CONFIG_PWR_UP | CONFIG_PRIM_RX;
@@ -131,30 +124,30 @@ namespace RadioTerminal
         setRegister(FEATURE, 0x00);
         
         // Set addresses
-        digitalWrite(_csnPin, 0);
+        digitalWriteFast(csnPin, 0);
         SPI.transfer(W_REGISTER | RX_ADDR_P1);
         SPI.transfer((rxAddress >>  0) & 0xff);
         SPI.transfer((rxAddress >>  8) & 0xff);
         SPI.transfer((rxAddress >> 16) & 0xff);
-        digitalWrite(_csnPin, 1);
-        digitalWrite(_csnPin, 0);
+        digitalWriteFast(csnPin, 1);
+        digitalWriteFast(csnPin, 0);
         SPI.transfer(W_REGISTER | TX_ADDR);
         SPI.transfer((txAddress >>  0) & 0xff);
         SPI.transfer((txAddress >>  8) & 0xff);
         SPI.transfer((txAddress >> 16) & 0xff);
-        digitalWrite(_csnPin, 1);
+        digitalWriteFast(csnPin, 1);
         
         // Put into PRX
-        digitalWrite(_cePin, 1);
+        digitalWriteFast(cePin, 1);
         delayMicroseconds(TIMING_Tstby2a);
         
         // Flush FIFOs
-        digitalWrite(_csnPin, 0);
+        digitalWriteFast(csnPin, 0);
         SPI.transfer(FLUSH_TX);
-        digitalWrite(_csnPin, 1);
-        digitalWrite(_csnPin, 0);
+        digitalWriteFast(csnPin, 1);
+        digitalWriteFast(csnPin, 0);
         SPI.transfer(FLUSH_RX);
-        digitalWrite(_csnPin, 1);
+        digitalWriteFast(csnPin, 1);
         
         write("\n> ");
     }
@@ -185,7 +178,7 @@ namespace RadioTerminal
         if (useRadio)
         {
             // Put into standby
-            digitalWrite(_cePin, 0);
+            digitalWriteFast(cePin, 0);
         
             // Configure for PTX
             int config = getRegister(CONFIG);
@@ -193,18 +186,18 @@ namespace RadioTerminal
             setRegister(CONFIG, config);
         
             // Write packet data
-            digitalWrite(_csnPin, 0);
+            digitalWriteFast(csnPin, 0);
             SPI.transfer(W_TX_PAYLOAD);
             SPI.transfer( (data>>0) & 0xff );
             SPI.transfer( (data>>8) & 0xff );
             SPI.transfer( (data>>16) & 0xff );
             SPI.transfer( (data>>24) & 0xff );
-            digitalWrite(_csnPin, 1);
+            digitalWriteFast(csnPin, 1);
         
             // Put into PTX
-            digitalWrite(_cePin, 1);
+            digitalWriteFast(cePin, 1);
             delayMicroseconds(TIMING_Tstby2a);
-            digitalWrite(_cePin, 0);
+            digitalWriteFast(cePin, 0);
         
             // Wait for message transmission and put into PRX
             delayMicroseconds(TIMING_Toa);
@@ -212,7 +205,7 @@ namespace RadioTerminal
             config |= CONFIG_PRIM_RX;
             setRegister(CONFIG, config);
             setRegister(STATUS, STATUS_TX_DS);
-            digitalWrite(_cePin, 1);
+            digitalWriteFast(cePin, 1);
         }
         
         #ifdef USB_SERIAL_ENABLE
@@ -226,20 +219,20 @@ namespace RadioTerminal
 
     int getRegister(int address)
     {
-        digitalWrite(_csnPin, 0);
+        digitalWriteFast(csnPin, 0);
         int rc = R_REGISTER | (address & REGISTER_ADDRESS_MASK);
         SPI.transfer(rc);
         int data = SPI.transfer(NOP);
-        digitalWrite(_csnPin, 1);
+        digitalWriteFast(csnPin, 1);
         return data;
     }
 
 
     int getStatus()
     {
-        digitalWrite(_csnPin, 0);
+        digitalWriteFast(csnPin, 0);
         int status = SPI.transfer(NOP);
-        digitalWrite(_csnPin, 1);
+        digitalWriteFast(csnPin, 1);
         return status;
     }
 
@@ -247,21 +240,21 @@ namespace RadioTerminal
     void setRegister(int address, int data)
     {
         bool enabled = false;
-        if (digitalRead(_cePin) == 1)
+        if (digitalRead(cePin) == 1)
         {
             enabled = true;
-            digitalWrite(_cePin, 0);
+            digitalWriteFast(cePin, 0);
         }
         
-        digitalWrite(_csnPin, 0);
+        digitalWriteFast(csnPin, 0);
         int rc = W_REGISTER | (address & REGISTER_ADDRESS_MASK);
         SPI.transfer(rc);
         SPI.transfer(data & 0xff);
-        digitalWrite(_csnPin, 1);
+        digitalWriteFast(csnPin, 1);
         
         if (enabled)
         {
-            digitalWrite(_cePin, 1);
+            digitalWriteFast(cePin, 1);
             delayMicroseconds(TIMING_Tpece2csn);
         }
     }
@@ -278,13 +271,13 @@ namespace RadioTerminal
             pipe = getStatus() & STATUS_RN_P_MASK;
             
             // Read data
-            digitalWrite(_csnPin, 0);
+            digitalWriteFast(csnPin, 0);
             SPI.transfer(R_RX_PAYLOAD);
             data |= SPI.transfer(NOP)<<0;
             data |= SPI.transfer(NOP)<<8;
             data |= SPI.transfer(NOP)<<16;
             data |= SPI.transfer(NOP)<<24;
-            digitalWrite(_csnPin, 1);
+            digitalWriteFast(csnPin, 1);
             
             // Sort into receive buffer
             switch(pipe)

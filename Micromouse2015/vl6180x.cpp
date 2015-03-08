@@ -87,7 +87,7 @@ bool VL6180X::init(uint8_t newAddress)
     // Reset device
     pinMode(enablePin, OUTPUT);
     digitalWrite(enablePin, LOW);
-    delay(1);
+    delayMicroseconds(100);
     
     pinMode(enablePin, INPUT);
     delay(1);
@@ -143,14 +143,11 @@ bool VL6180X::init(uint8_t newAddress)
 }
 
 
-uint8_t VL6180X::poll()
+void VL6180X::poll()
 {
-    uint8_t status = 0;
     lastReading = getRegister(RESULT__RANGE_VAL);
     setRegister(SYSTEM__INTERRUPT_CLEAR, 0x07);
     setRegister(SYSRANGE__START, 0x01);
-
-    return status;
 }
 
 
@@ -162,8 +159,6 @@ float VL6180X::getDistance()
 
 uint8_t VL6180X::getRegister(uint16_t regAddr)
 {
-    noInterrupts();
-    
     Wire.beginTransmission(address);
     Wire.write((regAddr >> 8) & 0xFF);
     Wire.write(regAddr & 0xFF);
@@ -172,20 +167,15 @@ uint8_t VL6180X::getRegister(uint16_t regAddr)
     Wire.requestFrom(address, 1, I2C_STOP);
     uint8_t data = Wire.read();
     
-    interrupts();
     return data;
 }
 
     
 void VL6180X::setRegister(uint16_t regAddr, uint8_t data)
 {
-    noInterrupts();
-    
     Wire.beginTransmission(address);
     Wire.write((regAddr >> 8) & 0xFF);
     Wire.write(regAddr & 0xFF);
     Wire.write(data);
     Wire.endTransmission();
-    
-    interrupts();
 }

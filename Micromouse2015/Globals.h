@@ -35,5 +35,8 @@ extern VL6180X rightSensor;
 extern VL6180X frontSensor;
 extern VL6180X leftSensor;
 
+void rled(bool on);
+void lled(bool on);
+
 
 #endif // GLOBALS_H
