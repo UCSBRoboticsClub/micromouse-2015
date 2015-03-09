@@ -5,7 +5,11 @@
 #include "Songs.h"
 #include "RadioTerminal.h"
 #include "Commands.h"
+#include "Maze.h"
+#include "BFS.h"
 
+
+Maze<16, 16> maze;
 
 IntervalTimer controlTimer;
 IntervalTimer sensorTimer;
@@ -40,24 +44,33 @@ void setup()
     RadioTerminal::initialize();
     setupCommands();
 
-    playSong(mortalkombat);
+    //playSong(mortalkombat);
 }
 
 
 void loop()
 {
-    if (digitalRead(nfaultPin) == LOW)
-        tone(buzzerPin, 440, 300);
-    
-    delay(100);
+    maze.clear();
+    NodeStack path;
+    lled(1);
+    bfs(maze, {0, 0}, {15, 15}, path);
+    lled(0);
+    delay(10);
 }
 
 
 void controlLoop()
 {
     rled(1);
+
+    if (digitalRead(nfaultPin) == LOW)
+        tone(buzzerPin, 440);
+    else
+        noTone(buzzerPin);
+    
     leftWheel.update();
     rightWheel.update();
+    
     rled(0);
 }
 
