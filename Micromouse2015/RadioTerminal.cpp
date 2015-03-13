@@ -27,7 +27,12 @@ namespace RadioTerminal
     void transmit(uint32_t data);
     void receiveChar(char c);
 
+    volatile uint32_t rx_controller = 0;
+    volatile uint32_t controllerTimestamp = 0;
+    const uint32_t clearMillis = 100;
     uint8_t channel = 56;
+    uint8_t controller = 0;
+    uint32_t controllerBaseAddress = 0x0001a4;
     uint32_t rxAddress = 0xd191bb;
     uint32_t txAddress = 0xe6e1fa;
 
@@ -113,17 +118,24 @@ namespace RadioTerminal
 
         // Configure remaining registers
         setRegister(EN_AA, 0x00);
-        setRegister(EN_RXADDR, ERX_P1);
+        setRegister(EN_RXADDR, ERX_P0 | ERX_P1);
         setRegister(SETUP_AW, SETUP_AW_3BYTES);
         setRegister(SETUP_RETR, 0x00);
         setRegister(RF_CH, channel);
         setRegister(RF_SETUP, RF_SETUP_RF_DR_HIGH | RF_SETUP_RF_PWR_0);
         setRegister(STATUS, STATUS_RX_DR | STATUS_TX_DS | STATUS_MAX_RT);
+        setRegister(RX_PW_P0, 4);
         setRegister(RX_PW_P1, 4);
         setRegister(DYNPD, 0x00);
         setRegister(FEATURE, 0x00);
         
         // Set addresses
+        digitalWriteFast(csnPin, 0);
+        SPI.transfer(W_REGISTER | RX_ADDR_P0);
+        SPI.transfer((controllerBaseAddress & 0xff) + (controller & 0xf));
+        SPI.transfer((controllerBaseAddress >>  8) & 0xff);
+        SPI.transfer((controllerBaseAddress >> 16) & 0xff);
+        digitalWriteFast(csnPin, 1);
         digitalWriteFast(csnPin, 0);
         SPI.transfer(W_REGISTER | RX_ADDR_P1);
         SPI.transfer((rxAddress >>  0) & 0xff);
@@ -282,6 +294,11 @@ namespace RadioTerminal
             // Sort into receive buffer
             switch(pipe)
             {
+            case STATUS_RN_P_NO_P0:
+                rx_controller = data;
+                controllerTimestamp = millis();
+                break;
+                
             case STATUS_RN_P_NO_P1:
                 /* Break data message into four chars and send to terminal,
                    stop if a null terminator is found */
@@ -520,6 +537,15 @@ namespace RadioTerminal
                 break;
             delayMicroseconds(20);
         }
+    }
+
+
+    uint32_t getControllerData()
+    {
+        if (millis() - controllerTimestamp > clearMillis)
+            rx_controller = 0;
+
+        return rx_controller;
     }
 }
 

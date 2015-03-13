@@ -24,7 +24,9 @@ namespace RadioTerminal
     void addCommand(const char* cmdString, CmdHandler* (*fpointer)(const char*) );
     void terminateCmd();
     void write(const char* string);
+    uint32_t getControllerData();
     
+    extern uint8_t controller;
     extern uint8_t channel;
     extern uint32_t rxAddress;
     extern uint32_t txAddress;
