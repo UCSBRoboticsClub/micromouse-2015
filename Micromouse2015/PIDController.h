@@ -1,13 +1,13 @@
-#ifndef CONTROLLOOP_H
-#define CONTROLLOOP_H
+#ifndef PIDCONTROLLER_H
+#define PIDCONTROLLER_H
 
 #include "LowPass.h"
 
 
-class ControlLoop
+class PIDController
 {
 public:
-    ControlLoop(float dt);
+    PIDController(float dt);
     float update(float error, float feedForward = 0.f);
     void setTuning(float kp, float ki, float kd);
     void setDerivLowpassFreq(float freq);
@@ -28,4 +28,4 @@ private:
     float lastError;
 };
 
-#endif // CONTROLLOOP_H
+#endif // PIDCONTROLLER_H

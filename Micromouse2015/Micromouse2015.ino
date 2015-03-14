@@ -44,12 +44,26 @@ void setup()
     RadioTerminal::initialize();
     setupCommands();
 
-    //playSong(mortalkombat);
+    playSong(mortalkombat);
 }
 
 
 void loop()
 {
+    uint32_t cdata = RadioTerminal::getControllerData();
+
+    float turn = 0.f;
+    float drive = 0.f;
+    
+    if (cdata != 0)
+    {
+        turn = 0.5f * 0.0078125f * int8_t((cdata>>16)&0xff);
+        drive = 0.5f * -0.0078125f * int8_t((cdata>>8)&0xff);
+    }
+
+    rightWheel.setVelocity(drive + turn);
+    leftWheel.setVelocity(drive - turn);
+    
     maze.clear();
     NodeStack path;
     lled(1);

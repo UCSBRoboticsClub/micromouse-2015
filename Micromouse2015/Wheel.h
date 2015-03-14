@@ -4,7 +4,7 @@
 #include <Encoder.h>
 #include "LowPass.h"
 #include "drv8833.h"
-#include "ControlLoop.h"
+#include "PIDController.h"
 
 
 class Wheel
@@ -24,8 +24,8 @@ public:
     float getPosition();
     void zeroPosition();
     
-    ControlLoop velocityLoop;
-    ControlLoop positionLoop;
+    PIDController velocityLoop;
+    PIDController positionLoop;
     
 //private:
     Motor motor;

@@ -1,7 +1,7 @@
-#include "ControlLoop.h"
+#include "PIDController.h"
 
 
-ControlLoop::ControlLoop(float dt) : 
+PIDController::PIDController(float dt) : 
     kp(0.f), 
     ki(0.f), 
     kd(0.f), 
@@ -14,7 +14,7 @@ ControlLoop::ControlLoop(float dt) :
 }
 
 
-void ControlLoop::setTuning(float kp, float ki, float kd)
+void PIDController::setTuning(float kp, float ki, float kd)
 {
     this->kp = kp;
     this->ki = ki;
@@ -22,26 +22,26 @@ void ControlLoop::setTuning(float kp, float ki, float kd)
 }
 
 
-void ControlLoop::setDerivLowpassFreq(float freq)
+void PIDController::setDerivLowpassFreq(float freq)
 {
     derror.setCutoffFreq(freq, dt);
 }
 
 
-void ControlLoop::setOutputLimits(float min, float max)
+void PIDController::setOutputLimits(float min, float max)
 {
     outputMin = min;
     outputMax = max;
 }
 
 
-void ControlLoop::zeroIntegral()
+void PIDController::zeroIntegral()
 {
     ierror = 0;
 }
 
 
-float ControlLoop::update(float error, float feedForward)
+float PIDController::update(float error, float feedForward)
 {
     float ierrorTemp = ierror + error * dt;
     
