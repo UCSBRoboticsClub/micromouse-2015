@@ -44,7 +44,7 @@ void setup()
     RadioTerminal::initialize();
     setupCommands();
 
-    playSong(mortalkombat);
+    playSong(recorder);
 }
 
 
@@ -78,9 +78,7 @@ void controlLoop()
     rled(1);
 
     if (digitalRead(nfaultPin) == LOW)
-        tone(buzzerPin, 440);
-    else
-        noTone(buzzerPin);
+        tone(buzzerPin, 440, 300);
     
     leftWheel.update();
     rightWheel.update();
