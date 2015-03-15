@@ -52,7 +52,7 @@ const Getter getList[] =
     {"rw.v", [&]{ return rightWheel.getVelocity(); }},
     {"lw.v", [&]{ return leftWheel.getVelocity(); }},
     {"rw.vc", GETFLOAT(rightWheel.velocityControl)},
-    {"lw.vc", GETFLOATleftWheel.velocityControl)},
+    {"lw.vc", GETFLOAT(leftWheel.velocityControl)},
     {"rs.d", [&]{ return rightSensor.getDistance(); }},
     {"ls.d", [&]{ return leftSensor.getDistance(); }},
     {"fs.d", [&]{ return frontSensor.getDistance(); }},
