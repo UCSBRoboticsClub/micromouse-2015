@@ -13,6 +13,7 @@ Xp = @(X, C, dt) [C(1)*cos(X(3) + C(2)/2*dt)*dt, C(1)*sin(X(3) + C(2)/2*dt)*dt, 
 
 % Robot parameters
 kp = 30;
+kd = 5;
 Vmax = [1, 6];
 Amax = [4, 20];
 Amaxdecel = [10, 40];
@@ -25,15 +26,19 @@ dt = 0.005;
 X = X0;
 V = V0;
 th = [];
-therr = [];
+therr = [0];
 plotper = 1/30;
 lastplot = -inf;
+Xcorr = [0, 0, 0];
+Xcorrlp = Xcorr;
+lpf = 1;
+fc = exp(lpf*dt) - 1;
 
 
 % Simulation loop
 for t = 0:dt:20
     % Current position + noise, target position
-    p0 = X(end, :) + (rand(1, 3)-.5).*(rand(1, 3) > 0.8)*0.0;
+    p0 = X(end, :);
     p1 = Xt(1:2);
     
     % Get tangent direction for arc between current point and target point
@@ -43,9 +48,10 @@ for t = 0:dt:20
     % Proportional feedback on direction, only move forward when direction
     % is correct
     therr(end+1) = mod(th(end) - p0(3) + pi, 2*pi) - pi;
+    dtherr = (therr(end) - therr(end-1))/dt;
     Vnew = [0, 0];
     Vnew(1) = max(Vmax(1)*cos(therr(end)), 0);
-    Vnew(2) = min(max(kp*therr(end), -Vmax(2)), Vmax(2));
+    Vnew(2) = min(max(kp*therr(end) + kd*dtherr(end), -Vmax(2)), Vmax(2));
     
     % Limit acceleration
     Vdiff = Vnew - V(end, :);
@@ -59,12 +65,15 @@ for t = 0:dt:20
     end
     Vnew = V(end, :) + Vdiff;
     
+    Xcorr(end+1, :) = Xcorr(end, :) + (rand(1, 3)-.5).*(rand(1, 3) > 0.99)*0.1;
+    Xcorrlp(end+1, :) = Xcorrlp(end, :)*(1-fc) + Xcorr(end, :)*fc;
+    
     % New state
-    V(end+1, :) = Vnew + Vmax.*(rand(1, 2)-.5)*0.0;
-    X(end+1, :) = X(end, :) + Xp(X(end, :), V(end, :), dt);
+    V(end+1, :) = Vnew + Vmax.*(rand(1, 2)-.5)*0.00;
+    X(end+1, :) = X(end, :) + Xp(X(end, :), V(end, :), dt) + Xcorrlp(end, :) - Xcorrlp(end-1, :);
     
     % Update target point when current target reached
-    if sqrt(sum((p1 - p0(1:2)).^2)) < 0.05
+    if sqrt(sum((p1 - p0(1:2)).^2)) < 0.1
         r = ceil(rand()*3);
         R = [cos(Xt(3)), -sin(Xt(3)); sin(Xt(3)), cos(Xt(3))];
         if inroom
@@ -97,6 +106,6 @@ for t = 0:dt:20
         grid on;
         drawnow;
         lastplot = t;
-        pause(plotper);
+        %pause(plotper);
     end
 end
