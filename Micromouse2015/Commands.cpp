@@ -9,6 +9,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define GETFLOAT(name) [&]{ return name; }
+#define SETFLOAT(name) [&](float f){ name = f; }
+
 
 struct Setter
 {
@@ -25,31 +28,31 @@ struct Getter
 
 const Setter setList[] =
 {
-    {"rw.kp", [&](float f){ rightWheel.velocityLoop.kp = f; }},
-    {"rw.ki", [&](float f){ rightWheel.velocityLoop.ki = f; }},
-    {"rw.kd", [&](float f){ rightWheel.velocityLoop.kd = f; }},
-    {"lw.kp", [&](float f){ leftWheel.velocityLoop.kp = f; }},
-    {"lw.ki", [&](float f){ leftWheel.velocityLoop.ki = f; }},
-    {"lw.kd", [&](float f){ leftWheel.velocityLoop.kd = f; }},
-    {"rw.vs", [&](float f){ rightWheel.velocitySetpoint = f; }},
-    {"lw.vs", [&](float f){ leftWheel.velocitySetpoint = f; }},
+    {"rw.kp", SETFLOAT(rightWheel.velocityLoop.kp)},
+    {"rw.ki", SETFLOAT(rightWheel.velocityLoop.ki)},
+    {"rw.kd", SETFLOAT(rightWheel.velocityLoop.kd)},
+    {"lw.kp", SETFLOAT(leftWheel.velocityLoop.kp)},
+    {"lw.ki", SETFLOAT(leftWheel.velocityLoop.ki)},
+    {"lw.kd", SETFLOAT(leftWheel.velocityLoop.kd)},
+    {"rw.vs", SETFLOAT(rightWheel.velocitySetpoint)},
+    {"lw.vs", SETFLOAT(leftWheel.velocitySetpoint)},
 };
 
 
 const Getter getList[] =
 {
-    {"rw.kp", [&]{ return rightWheel.velocityLoop.kp; }},
-    {"rw.ki", [&]{ return rightWheel.velocityLoop.ki; }},
-    {"rw.kd", [&]{ return rightWheel.velocityLoop.kd; }},
-    {"lw.kp", [&]{ return leftWheel.velocityLoop.kp; }},
-    {"lw.ki", [&]{ return leftWheel.velocityLoop.ki; }},
-    {"lw.kd", [&]{ return leftWheel.velocityLoop.kd; }},
-    {"rw.vs", [&]{ return rightWheel.velocitySetpoint; }},
-    {"lw.vs", [&]{ return leftWheel.velocitySetpoint; }},
+    {"rw.kp", GETFLOAT(rightWheel.velocityLoop.kp)},
+    {"rw.ki", GETFLOAT(rightWheel.velocityLoop.ki)},
+    {"rw.kd", GETFLOAT(rightWheel.velocityLoop.kd)},
+    {"lw.kp", GETFLOAT(leftWheel.velocityLoop.kp)},
+    {"lw.ki", GETFLOAT(leftWheel.velocityLoop.ki)},
+    {"lw.kd", GETFLOAT(leftWheel.velocityLoop.kd)},
+    {"rw.vs", GETFLOAT(rightWheel.velocitySetpoint)},
+    {"lw.vs", GETFLOAT(leftWheel.velocitySetpoint)},
     {"rw.v", [&]{ return rightWheel.getVelocity(); }},
     {"lw.v", [&]{ return leftWheel.getVelocity(); }},
-    {"rw.vc", [&]{ return rightWheel.velocityControl; }},
-    {"lw.vc", [&]{ return leftWheel.velocityControl; }},
+    {"rw.vc", GETFLOAT(rightWheel.velocityControl)},
+    {"lw.vc", GETFLOATleftWheel.velocityControl)},
     {"rs.d", [&]{ return rightSensor.getDistance(); }},
     {"ls.d", [&]{ return leftSensor.getDistance(); }},
     {"fs.d", [&]{ return frontSensor.getDistance(); }},
