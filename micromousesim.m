@@ -14,16 +14,18 @@ Xp = @(X, C, dt) [C(1)*cos(X(3) + C(2)/2*dt)*dt, C(1)*sin(X(3) + C(2)/2*dt)*dt, 
 % Robot parameters
 kp = 30;
 Vmax = [1, 6];
+Amax = [4, 20];
+Amaxdecel = [10, 40];
 
 % Direction indicator length
 al = 0.1;
 
 % Setup
-dt = 0.01;
+dt = 0.005;
 X = X0;
 V = V0;
 th = [];
-dth = [];
+therr = [];
 plotper = 1/30;
 lastplot = -inf;
 
@@ -40,17 +42,29 @@ for t = 0:dt:20
     
     % Proportional feedback on direction, only move forward when direction
     % is correct
-    dth(end+1) = mod(th(end) - p0(3) + pi, 2*pi) - pi;
+    therr(end+1) = mod(th(end) - p0(3) + pi, 2*pi) - pi;
     Vnew = [0, 0];
-    Vnew(1) = max(Vmax(1)*cos(dth(end)), 0);
-    Vnew(2) = min(max(kp*dth(end), -Vmax(2)), Vmax(2));
+    Vnew(1) = max(Vmax(1)*cos(therr(end)), 0);
+    Vnew(2) = min(max(kp*therr(end), -Vmax(2)), Vmax(2));
+    
+    % Limit acceleration
+    Vdiff = Vnew - V(end, :);
+    if Vdiff(2)*Vnew(end, 2) > 0
+        Vdiff(1) = min(max(Vdiff(1), -Amax(1)*dt), Amax(1)*dt);
+        Vdiff(2) = min(max(Vdiff(2), -Amax(2)*dt), Amax(2)*dt);
+    else
+        
+        Vdiff(1) = min(max(Vdiff(1), -Amaxdecel(1)*dt), Amaxdecel(1)*dt);
+        Vdiff(2) = min(max(Vdiff(2), -Amaxdecel(2)*dt), Amaxdecel(2)*dt);
+    end
+    Vnew = V(end, :) + Vdiff;
     
     % New state
     V(end+1, :) = Vnew + Vmax.*(rand(1, 2)-.5)*0.0;
     X(end+1, :) = X(end, :) + Xp(X(end, :), V(end, :), dt);
     
     % Update target point when current target reached
-    if sqrt(sum((p1 - p0(1:2)).^2)) < 0.01
+    if sqrt(sum((p1 - p0(1:2)).^2)) < 0.05
         r = ceil(rand()*3);
         R = [cos(Xt(3)), -sin(Xt(3)); sin(Xt(3)), cos(Xt(3))];
         if inroom
