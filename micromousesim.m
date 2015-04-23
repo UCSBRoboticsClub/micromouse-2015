@@ -32,7 +32,7 @@ lastplot = -inf;
 Xcorr = [0, 0, 0];
 Xcorrlp = Xcorr;
 lpf = 1;
-fc = exp(lpf*dt) - 1;
+fc = 1 - exp(-lpf*dt);
 
 
 % Simulation loop
