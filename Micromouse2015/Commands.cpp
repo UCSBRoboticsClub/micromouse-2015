@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define GETFLOAT(name) [&]{ return name; }
+#define GET(name) [&]{ return float(name); }
 #define SETFLOAT(name) [&](float f){ name = f; }
 
 
@@ -41,21 +41,24 @@ const Setter setList[] =
 
 const Getter getList[] =
 {
-    {"rw.kp", GETFLOAT(rightWheel.velocityLoop.kp)},
-    {"rw.ki", GETFLOAT(rightWheel.velocityLoop.ki)},
-    {"rw.kd", GETFLOAT(rightWheel.velocityLoop.kd)},
-    {"lw.kp", GETFLOAT(leftWheel.velocityLoop.kp)},
-    {"lw.ki", GETFLOAT(leftWheel.velocityLoop.ki)},
-    {"lw.kd", GETFLOAT(leftWheel.velocityLoop.kd)},
-    {"rw.vs", GETFLOAT(rightWheel.velocitySetpoint)},
-    {"lw.vs", GETFLOAT(leftWheel.velocitySetpoint)},
-    {"rw.v", [&]{ return rightWheel.getVelocity(); }},
-    {"lw.v", [&]{ return leftWheel.getVelocity(); }},
-    {"rw.vc", GETFLOAT(rightWheel.velocityControl)},
-    {"lw.vc", GETFLOAT(leftWheel.velocityControl)},
-    {"rs.d", [&]{ return rightSensor.getDistance(); }},
-    {"ls.d", [&]{ return leftSensor.getDistance(); }},
-    {"fs.d", [&]{ return frontSensor.getDistance(); }},
+    {"x", GET(x)},
+    {"y", GET(y)},
+    {"theta", GET(theta)},
+    {"rw.kp", GET(rightWheel.velocityLoop.kp)},
+    {"rw.ki", GET(rightWheel.velocityLoop.ki)},
+    {"rw.kd", GET(rightWheel.velocityLoop.kd)},
+    {"lw.kp", GET(leftWheel.velocityLoop.kp)},
+    {"lw.ki", GET(leftWheel.velocityLoop.ki)},
+    {"lw.kd", GET(leftWheel.velocityLoop.kd)},
+    {"rw.vs", GET(rightWheel.velocitySetpoint)},
+    {"lw.vs", GET(leftWheel.velocitySetpoint)},
+    {"rw.v", GET(rightWheel.getVelocity())},
+    {"lw.v", GET(leftWheel.getVelocity())},
+    {"rw.vc", GET(rightWheel.velocityControl)},
+    {"lw.vc", GET(leftWheel.velocityControl)},
+    {"rs.d", GET(rightSensor.getDistance())},
+    {"ls.d", GET(leftSensor.getDistance())},
+    {"fs.d", GET(frontSensor.getDistance())},
 };
 
 

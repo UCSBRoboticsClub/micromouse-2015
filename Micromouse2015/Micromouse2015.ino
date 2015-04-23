@@ -7,6 +7,7 @@
 #include "Commands.h"
 #include "Maze.h"
 #include "BFS.h"
+#include <cmath>
 
 
 Maze<16, 16> maze;
@@ -44,32 +45,13 @@ void setup()
     RadioTerminal::initialize();
     setupCommands();
 
-    playSong(recorder);
+    //playSong(mortalkombat);
 }
 
 
 void loop()
 {
-    uint32_t cdata = RadioTerminal::getControllerData();
-
-    float turn = 0.f;
-    float drive = 0.f;
     
-    if (cdata != 0)
-    {
-        turn = 0.5f * 0.0078125f * int8_t((cdata>>16)&0xff);
-        drive = 0.5f * -0.0078125f * int8_t((cdata>>8)&0xff);
-    }
-
-    rightWheel.setVelocity(drive + turn);
-    leftWheel.setVelocity(drive - turn);
-    
-    maze.clear();
-    NodeStack path;
-    lled(1);
-    bfs(maze, {0, 0}, {15, 15}, path);
-    lled(0);
-    delay(10);
 }
 
 
@@ -82,6 +64,21 @@ void controlLoop()
     
     leftWheel.update();
     rightWheel.update();
+
+    // Update state based on encoders
+    const int rCountNew = rightWheel.getCounts();
+    const int lCountNew = leftWheel.getCounts();
+    const int rDiff = rCount - rCountNew;
+    const int lDiff = lCount - lCountNew;
+    rCount = rCountNew;
+    lCount = lCountNew;
+
+    const float dTheta = (rDiff - lDiff) * count2dist / wheelBase;
+    const float dDist = (rDiff + lDiff) * 0.5f * count2dist;
+
+    x += dDist * std::cos(theta + dTheta * 0.5f);
+    y += dDist * std::sin(theta + dTheta * 0.5f);
+    theta += dTheta;
     
     rled(0);
 }

@@ -1,4 +1,5 @@
 #include "vl6180x.h"
+#include <Arduino.h>
 #include "i2c_t3.h"
 
 
@@ -170,7 +171,7 @@ uint8_t VL6180X::getRegister(uint16_t regAddr)
     return data;
 }
 
-    
+
 void VL6180X::setRegister(uint16_t regAddr, uint8_t data)
 {
     Wire.beginTransmission(address);

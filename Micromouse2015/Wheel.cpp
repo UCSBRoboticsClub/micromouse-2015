@@ -68,3 +68,9 @@ void Wheel::zeroPosition()
 {
     encoder.write(0);
 }
+
+
+int Wheel::getCounts()
+{
+    return encoder.read();
+}

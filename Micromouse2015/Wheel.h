@@ -23,6 +23,7 @@ public:
     void setPosition(float pos);
     float getPosition();
     void zeroPosition();
+    int getCounts();
     
     PIDController velocityLoop;
     PIDController positionLoop;
