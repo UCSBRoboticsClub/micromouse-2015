@@ -21,6 +21,8 @@ void sensorLoop();
 
 void setup()
 {
+    asm(".global _printf_float");
+    
     pinMode(buzzerPin, OUTPUT);
     pinMode(led1Pin, OUTPUT);
     pinMode(led2Pin, OUTPUT);
