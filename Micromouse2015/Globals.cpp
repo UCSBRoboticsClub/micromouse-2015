@@ -7,6 +7,11 @@ float y = 0.f;
 float theta = 0.f;
 int lCount = 0;
 int rCount = 0;
+LowPass drdt;
+LowPass dfdt;
+LowPass dldt;
+LowPass dthdt;
+LowPass dsdt;
 
 Wheel leftWheel(motorLR, motorLF, encoderL1, encoderL2, dt, wheelCirc, ppr);
 Wheel rightWheel(motorRR, motorRF, encoderR1, encoderR2, dt, wheelCirc, ppr);
