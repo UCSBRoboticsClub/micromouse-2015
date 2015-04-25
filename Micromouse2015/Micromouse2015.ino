@@ -84,7 +84,7 @@ void controlLoop()
     x += dDist * std::cos(theta + dTheta * 0.5f);
     y += dDist * std::sin(theta + dTheta * 0.5f);
     theta += dTheta;
-    theta = std::fmod(theta, pi*2.f);
+    theta = std::fmod(theta + pi*2.f, pi*2.f);
 
     dthdt.push(dTheta / dt);
     dsdt.push(dDist / dt);
@@ -126,20 +126,20 @@ void controlLoop()
     const float ctheta = 0.01f;
     const float cside = 0.01f;
     const float cfront = 0.01f;
-    const float sideOffset = 0.18f - 0.012f - 0.067f;
-    const float frontOffset = 0.18f - 0.012f - 0.054f;
+    const float sideOffset = (0.18f - 0.012f - 0.067f)/2.f;
+    const float frontOffset = (0.18f - 0.012f - 0.054f)/2.f;
 
     if (drdt > 2.f*dthdt && std::fabs(theta) < 0.5f)
         theta = (1.f - ctheta)*theta + ctheta*std::atan(drdt / dsdt);
     if (dldt > 2.f*dthdt && std::fabs(theta) < 0.5f)
         theta = (1.f - ctheta) * theta - ctheta * std::atan(dldt / dsdt);
 
-    if (auto dist = rightSensor.getDistance() < 0.1f)
-        *side = (1.f - cside)*(*side) + sideDir*cside*(sideOffset - dist/std::cos(theta - thoffset));
-    if (auto dist = leftSensor.getDistance() < 0.1f)
-        *side = (1.f - cside)*(*side) - sideDir*cside*(sideOffset - dist/std::cos(theta - thoffset));
-    if (auto dist = frontSensor.getDistance() < 0.1f)
-        *front = (1.f - cfront)*(*front) + frontDir*cfront*(frontOffset - dist/std::cos(theta - thoffset));
+    if (rightSensor.getDistance() < 0.1f)
+        *side = (1.f - cside)*(*side) + sideDir*cside*(sideOffset - rightSensor.getDistance()*std::cos(theta - thoffset));
+    if (leftSensor.getDistance() < 0.1f)
+        *side = (1.f - cside)*(*side) - sideDir*cside*(sideOffset - leftSensor.getDistance()*std::cos(theta - thoffset));
+    if (frontSensor.getDistance() < 0.1f)
+        *front = (1.f - cfront)*(*front) + frontDir*cfront*(frontOffset - frontSensor.getDistance()*std::cos(theta - thoffset));
 
     // Send commands to wheels
     leftWheel.update();
