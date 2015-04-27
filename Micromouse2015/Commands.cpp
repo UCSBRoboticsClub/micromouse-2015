@@ -28,6 +28,13 @@ struct Getter
 
 const Setter setList[] =
 {
+    {"s.x", SETFLOAT(state.x)},
+    {"s.y", SETFLOAT(state.y)},
+    {"s.th", SETFLOAT(state.theta)},
+    {"t.x", SETFLOAT(target.x)},
+    {"t.y", SETFLOAT(target.y)},
+    {"t.th", SETFLOAT(target.theta)},
+    {"speed", SETFLOAT(speed)},
     {"rw.vkp", SETFLOAT(rightWheel.velocityLoop.kp)},
     {"rw.vki", SETFLOAT(rightWheel.velocityLoop.ki)},
     {"rw.vkd", SETFLOAT(rightWheel.velocityLoop.kd)},
@@ -49,9 +56,23 @@ const Setter setList[] =
 
 const Getter getList[] =
 {
-    {"x", GET(x)},
-    {"y", GET(y)},
-    {"theta", GET(theta)},
+    {"s.x", GET(state.x)},
+    {"s.y", GET(state.y)},
+    {"s.th", GET(state.theta)},
+    {"t.x", GET(target.x)},
+    {"t.y", GET(target.y)},
+    {"t.th", GET(target.theta)},
+    {"c.i", GET(currentCell.i)},
+    {"c.j", GET(currentCell.j)},
+    {"drdt", GET(drdt)},
+    {"dfdt", GET(dfdt)},
+    {"dldt", GET(dldt)},
+    {"dthdt", GET(dthdt)},
+    {"dsdt", GET(dsdt)},
+    {"thgoal", GET(thgoal)},
+    {"therr", GET(therr)},
+    {"thctrl", GET(thctrl)},
+    {"speed", GET(speed)},
     {"rw.vkp", GET(rightWheel.velocityLoop.kp)},
     {"rw.vki", GET(rightWheel.velocityLoop.ki)},
     {"rw.vkd", GET(rightWheel.velocityLoop.kd)},

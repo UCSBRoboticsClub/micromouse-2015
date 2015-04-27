@@ -4,6 +4,8 @@
 #include "Wheel.h"
 #include "vl6180x.h"
 #include "LowPass.h"
+#include "PIDController.h"
+#include "BFS.h"
 
 
 const int motorRF = 21; // right forward motor pin
@@ -28,14 +30,32 @@ const int ppr = 1200;
 const float count2dist = wheelCirc / ppr;
 const float wheelBase = 0.0823f;
 const float pi = 3.14159265f;
+const float cellw = 0.18f;
+const float wallw = 0.012f;
+const float sensw = 0.067f;
+const float fsensoff = 0.054f;
+
+const int mazem = 16;
+const int mazen = 16;
+
+const float ctheta = 0.01f;
+const float cside = 0.01f;
+const float cfront = 0.01f;
 
 const unsigned int sensorFreq = 50; // Hz
 const unsigned int sensorPeriodUs = 1000000 / sensorFreq;
 const float dtsensor = 1.f / sensorFreq;
 
-extern float x;
-extern float y;
-extern float theta;
+struct State
+{
+    float x;
+    float y;
+    float theta;
+};
+
+extern State state;
+extern State target;
+extern Node currentCell;
 extern int lCount;
 extern int rCount;
 extern LowPass drdt;
@@ -43,6 +63,11 @@ extern LowPass dfdt;
 extern LowPass dldt;
 extern LowPass dthdt;
 extern LowPass dsdt;
+extern float thgoal;
+extern float therr;
+extern float thctrl;
+extern float speed;
+extern PIDController thetaController;
 
 extern Wheel leftWheel;
 extern Wheel rightWheel;

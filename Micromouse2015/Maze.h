@@ -1,6 +1,8 @@
 #ifndef MAZE_HPP
 #define MAZE_HPP
 
+#undef min
+#undef max
 #include <array>
 #include <cstdlib>
 #include "BitArray2D.h"

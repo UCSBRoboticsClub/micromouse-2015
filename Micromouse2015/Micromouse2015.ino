@@ -17,6 +17,8 @@ IntervalTimer sensorTimer;
 
 void controlLoop();
 void sensorLoop();
+float circleDist(float a, float b);
+float limit(float x, float lim);
 
 
 void setup()
@@ -36,11 +38,14 @@ void setup()
     controlTimer.begin(controlLoop, controlPeriodUs);
     controlTimer.priority(144);
 
-    drdt.setCutoffFreq(dtsensor, 10.f);
-    dfdt.setCutoffFreq(dtsensor, 10.f);
-    dldt.setCutoffFreq(dtsensor, 10.f);
-    dthdt.setCutoffFreq(dt, 30.f);
-    dthdt.setCutoffFreq(dt, 30.f);
+    drdt.setTimeConst(dtsensor, 0.1f);
+    dfdt.setTimeConst(dtsensor, 0.1f);
+    dldt.setTimeConst(dtsensor, 0.1f);
+    dthdt.setTimeConst(dt, 0.1f);
+    dsdt.setTimeConst(dt, 0.1f);
+
+    thetaController.setTuning(1.f, 0.f, 0.f);
+    thetaController.setOutputLimits(-0.2f, 0.2f);
 
     VL6180X::setup();
     rightSensor.init(0x31);
@@ -54,6 +59,7 @@ void setup()
     setupCommands();
 
     //playSong(mortalkombat);
+
 }
 
 
@@ -81,10 +87,10 @@ void controlLoop()
     const float dTheta = -(rDiff - lDiff) * count2dist / wheelBase;
     const float dDist = -(rDiff + lDiff) * 0.5f * count2dist;
 
-    x += dDist * std::cos(theta + dTheta * 0.5f);
-    y += dDist * std::sin(theta + dTheta * 0.5f);
-    theta += dTheta;
-    theta = std::fmod(theta + pi*2.f, pi*2.f);
+    state.x += dDist * std::cos(state.theta + dTheta * 0.5f);
+    state.y += dDist * std::sin(state.theta + dTheta * 0.5f);
+    state.theta += dTheta;
+    state.theta = std::fmod(state.theta + pi*2.f, pi*2.f);
 
     dthdt.push(dTheta / dt);
     dsdt.push(dDist / dt);
@@ -97,49 +103,106 @@ void controlLoop()
     float frontDir = 0.f;
     float thoffset = 0.f;
     const float thwidth2 = pi/12.f;
-    if (theta > pi*2.f - thwidth2 || theta < pi*0.f + thwidth2)
+    if (circleDist(state.theta, 0.f) < thwidth2)
     {
-        side = &y; sideDir = -1.f;
-        front = &x; frontDir = 1.f;
-        thoffset = 0.f;
+        side = &state.y; sideDir = -1.f;
+        front = &state.x; frontDir = 1.f;
+        thoffset = state.theta < pi ? 0 : 2.f*pi;
     }
-    else if (theta > pi*0.5f - thwidth2 && theta < pi*0.5f + thwidth2)
+    else if (circleDist(state.theta, pi*0.5f) < thwidth2)
     {
-        side = &x; sideDir = 1.f;
-        front = &y; frontDir = 1.f;
+        side = &state.x; sideDir = 1.f;
+        front = &state.y; frontDir = 1.f;
         thoffset = pi*0.5f;
     }
-    else if (theta > pi*1.f - thwidth2 && theta < pi*1.f + thwidth2)
+    else if (circleDist(state.theta, pi) < thwidth2)
     {
-        side = &y; sideDir = 1.f;
-        front = &x; frontDir = -1.f;
+        side = &state.y; sideDir = 1.f;
+        front = &state.x; frontDir = -1.f;
         thoffset = pi;
     }
-    else if (theta > pi*1.5f - thwidth2 && theta < pi*1.5f + thwidth2)
+    else if (circleDist(state.theta, pi*1.5f) < thwidth2)
     {
-        side = &x; sideDir = -1.f;
-        front = &y; frontDir = -1.f;
+        side = &state.x; sideDir = -1.f;
+        front = &state.y; frontDir = -1.f;
         thoffset = pi*1.5f;
     }
 
     // Add distance sensor measurements to state
-    const float ctheta = 0.01f;
-    const float cside = 0.01f;
-    const float cfront = 0.01f;
-    const float sideOffset = (0.18f - 0.012f - 0.067f)/2.f;
-    const float frontOffset = (0.18f - 0.012f - 0.054f)/2.f;
+    const float sideOffset = (cellw - wallw - sensw)/2.f;
+    const float frontOffset = (cellw - wallw)/2.f - fsensoff;
+    const float rdist = rightSensor.getDistance();
+    const float fdist = frontSensor.getDistance();
+    const float ldist = leftSensor.getDistance();
 
-    if (drdt > 2.f*dthdt && std::fabs(theta) < 0.5f)
-        theta = (1.f - ctheta)*theta + ctheta*std::atan(drdt / dsdt);
-    if (dldt > 2.f*dthdt && std::fabs(theta) < 0.5f)
-        theta = (1.f - ctheta) * theta - ctheta * std::atan(dldt / dsdt);
+    if (rdist < 0.15f && circleDist(state.theta, thoffset) < 0.5f && std::fabs(dsdt) > 0.01)
+    {
+        const float thMeas = thoffset - limit(drdt/(dsdt - dthdt*(sensw*0.5f + rdist)), 0.25f*pi);
+        state.theta = (1.f - ctheta)*state.theta + ctheta*thMeas;
+    }
+    if (ldist < 0.15f && circleDist(state.theta, thoffset) < 0.5f && std::fabs(dsdt) > 0.01)
+    {
+        const float thMeas = thoffset + limit(dldt/(dsdt - dthdt*(sensw*0.5f + ldist)), 0.25f*pi);
+        state.theta = (1.f - ctheta)*state.theta + ctheta*thMeas;
+    }
 
-    if (rightSensor.getDistance() < 0.1f)
-        *side = (1.f - cside)*(*side) + sideDir*cside*(sideOffset - rightSensor.getDistance()*std::cos(theta - thoffset));
-    if (leftSensor.getDistance() < 0.1f)
-        *side = (1.f - cside)*(*side) - sideDir*cside*(sideOffset - leftSensor.getDistance()*std::cos(theta - thoffset));
-    if (frontSensor.getDistance() < 0.1f)
-        *front = (1.f - cfront)*(*front) + frontDir*cfront*(frontOffset - frontSensor.getDistance()*std::cos(theta - thoffset));
+    if (rdist < 0.15f)
+        *side = (1.f - cside)*(*side) + sideDir*cside*(sideOffset - rdist*std::cos(state.theta - thoffset));
+    if (ldist < 0.15f)
+        *side = (1.f - cside)*(*side) - sideDir*cside*(sideOffset - ldist*std::cos(state.theta - thoffset));
+    if (fdist < 0.15f)
+        *front = (1.f - cfront)*(*front) + frontDir*cfront*(frontOffset - fdist*std::cos(state.theta - thoffset));
+
+    // Change current cell if robot has moved far enough
+    const float hyst = 0.01f;
+    if (state.x > cellw*0.5f + hyst && currentCell.i < mazem - 1)
+    {
+        state.x -= cellw;
+        ++currentCell.i;
+    }
+    if (state.y > cellw*0.5f + hyst && currentCell.j < mazen - 1)
+    {
+        state.y -= cellw;
+        ++currentCell.j;
+    }
+    if (state.x < -(cellw*0.5f + hyst) && currentCell.i > 0)
+    {
+        state.x += cellw;
+        --currentCell.i;
+    }
+    if (state.y > -(cellw*0.5f + hyst) && currentCell.j > 0)
+    {
+        state.y += cellw;
+        --currentCell.j;
+    }
+        
+    // Move towards target
+    if (std::fabs(target.x - state.x) < 0.002 &&
+        std::fabs(target.y - state.y) < 0.002 &&
+        std::fabs(target.theta - state.theta) < 0.01)
+    {
+        // Don't move if close enough to the target
+        rightWheel.setVelocity(0.f);
+        leftWheel.setVelocity(0.f);
+    }
+    else
+    {
+        const float thp = std::atan2(target.y - state.y, target.x - state.x);
+        thgoal = 2.f*thp - target.theta;
+        therr = std::fmod(thgoal - state.theta + 3.f*pi, 2.f*pi) - pi;
+        thctrl = thetaController.update(therr);
+
+        const float maxSpeed = 0.2f;
+        const float slowDownDist = 0.03f;
+        const float targetDist = std::sqrt((target.x - state.x)*(target.x - state.x) +
+                                           (target.y - state.y)*(target.y - state.y));
+        speed = maxSpeed*std::cos(therr);
+        speed = speed > 0.f ? speed : 0.f;
+        if (targetDist < slowDownDist)
+            speed = speed * targetDist / slowDownDist;
+        rightWheel.setVelocity(speed + thctrl);
+        leftWheel.setVelocity(speed - thctrl);
+    }
 
     // Send commands to wheels
     leftWheel.update();
@@ -165,4 +228,13 @@ void sensorLoop()
 }
 
 
+float circleDist(float a, float b)
+{
+    return std::fabs(std::fmod(a - b + 3.f*pi, 2.f*pi) - pi);
+}
 
+
+float limit(float x, float lim)
+{
+    return x > lim ? lim : (x < -lim ? -lim : x);
+}
