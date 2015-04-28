@@ -38,10 +38,6 @@ const float fsensoff = 0.054f;
 const int mazem = 16;
 const int mazen = 16;
 
-const float ctheta = 0.01f;
-const float cside = 0.01f;
-const float cfront = 0.01f;
-
 const unsigned int sensorFreq = 50; // Hz
 const unsigned int sensorPeriodUs = 1000000 / sensorFreq;
 const float dtsensor = 1.f / sensorFreq;
@@ -68,6 +64,9 @@ extern float therr;
 extern float thctrl;
 extern float speed;
 extern PIDController thetaController;
+extern float ctheta;
+extern float cside;
+extern float cfront;
 
 extern Wheel leftWheel;
 extern Wheel rightWheel;

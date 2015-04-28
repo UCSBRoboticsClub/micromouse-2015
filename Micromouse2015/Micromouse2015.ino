@@ -184,7 +184,7 @@ void controlLoop()
     // Move towards target
     if (std::fabs(target.x - state.x) < 0.02f &&
         std::fabs(target.y - state.y) < 0.02f &&
-        std::fabs(target.theta - state.theta) < 0.1f)
+        circleDist(target.theta, state.theta) < 0.1f)
     {
         // Don't move if close enough to the target
         rightWheel.setVelocity(0.f);
@@ -194,7 +194,7 @@ void controlLoop()
     {
         const float thp = std::atan2(target.y - state.y, target.x - state.x);
         thgoal = 2.f*thp - target.theta;
-        therr = std::fmod(thgoal - state.theta + 3.f*pi, 2.f*pi) - pi;
+        therr = std::fmod(thgoal - state.theta + 7.f*pi, 2.f*pi) - pi;
         thctrl = thetaController.update(therr);
 
         const float maxSpeed = 0.2f;

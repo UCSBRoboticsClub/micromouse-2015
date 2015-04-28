@@ -2,7 +2,7 @@
 #include <Arduino.h>
 
 
-State state = {0.f, 0.f, 0.5f*pi};
+State state = {0.f, 0.f, 0.f};
 State target = {0.f, 0.f, 0.f};
 Node currentCell = {0, 0};
 int lCount = 0;
@@ -17,6 +17,9 @@ float therr = 0.f;
 float thctrl = 0.f;
 float speed = 0.f;
 PIDController thetaController(dt);
+float ctheta = 0.01f;
+float cside = 0.01f;
+float cfront = 0.01f;
 
 Wheel leftWheel(motorLR, motorLF, encoderL1, encoderL2, dt, wheelCirc, ppr);
 Wheel rightWheel(motorRR, motorRF, encoderR1, encoderR2, dt, wheelCirc, ppr);
