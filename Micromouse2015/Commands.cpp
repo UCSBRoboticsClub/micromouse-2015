@@ -8,6 +8,9 @@
 #include <cstring>
 #include <stdlib.h>
 #include <stdio.h>
+#include "RingBuffer.h"
+#include <array>
+#include <limits>
 
 #define GET(name) [&]{ return float(name); }
 #define SETFLOAT(name) [&](float f){ name = f; }
@@ -24,6 +27,10 @@ struct Getter
     const char* name;
     std::function<float(void)> func;
 };
+
+
+std::function<void(float)> setNull = [](float f){};
+std::function<float(void)> getNull = []{ return std::numeric_limits<float>::quiet_NaN(); };
 
 
 const Setter setList[] =
@@ -230,11 +237,160 @@ CmdHandler* set(const char* input)
 }
 
 
+class LogHandler : public CmdHandler
+{
+public:
+    LogHandler() { logging = true; }
+    virtual void sendChar(char c) { logging = false; RadioTerminal::terminateCmd(); }
+    ~LogHandler() { logging = false; }
+    static std::function<float(void)> logFun1;
+    static std::function<float(void)> logFun2;
+    static std::function<float(void)> logFun3;
+    static bool logging;
+    static int numLogging;
+    static RingBuffer<std::array<float, 3>, 1024> dataLog;
+};
+
+std::function<float(void)> LogHandler::logFun1 = getNull;
+std::function<float(void)> LogHandler::logFun2 = getNull;
+std::function<float(void)> LogHandler::logFun3 = getNull;
+bool LogHandler::logging;
+int LogHandler::numLogging;
+RingBuffer<std::array<float, 3>, 1024> LogHandler::dataLog;
+
+
+CmdHandler* log(const char* input)
+{
+    char buf[32];
+    const int getListSize = (sizeof getList) / (sizeof getList[0]);
+
+    const char* s1 = std::strchr(input, ' ');
+    const char* s2 = (s1 != nullptr) ? std::strchr(s1+1, ' ') : nullptr;
+    const char* s3 = (s2 != nullptr) ? std::strchr(s2+1, ' ') : nullptr;
+
+    LogHandler::logFun1 = getNull;
+    LogHandler::logFun2 = getNull;
+    LogHandler::logFun3 = getNull;
+    LogHandler::numLogging = 0;
+
+    if (s1 != nullptr)
+    {
+        int len = s2 != nullptr ? s2 - s1 - 1: 32;
+        for (int i = 0; i < getListSize; ++i)
+        {
+            if (std::strncmp(s1+1, getList[i].name, len) == 0)
+            {
+                LogHandler::logFun1 = getList[i].func;
+                LogHandler::numLogging = 1;
+                break;
+            }
+        }
+    }
+
+    if (s2 != nullptr)
+    {
+        int len = s3 != nullptr ? s3 - s2 - 1: 32;
+        for (int i = 0; i < getListSize; ++i)
+        {
+            if (std::strncmp(s2+1, getList[i].name, len) == 0)
+            {
+                LogHandler::logFun2 = getList[i].func;
+                LogHandler::numLogging = 2;
+                break;
+            }
+        }
+    }
+
+    if (s3 != nullptr)
+    {
+        for (int i = 0; i < getListSize; ++i)
+        {
+            if (std::strncmp(s3+1, getList[i].name, 32) == 0)
+            {
+                LogHandler::logFun3 = getList[i].func;
+                LogHandler::numLogging = 3;
+                break;
+            }
+        }
+    }
+
+    if (LogHandler::numLogging > 0)
+    {
+        snprintf(buf, 32, "Logging %d variable(s)...", LogHandler::numLogging);
+        RadioTerminal::write(buf);
+        LogHandler::dataLog.clear();
+        return new LogHandler();
+    }
+
+    RadioTerminal::write("Usage: l <var1> <var2?> <var3?>\nValid vars:");
+    for (int i = 0; i < getListSize; ++i)
+    {
+        snprintf(buf, 32, "\n  %s", getList[i].name);
+        RadioTerminal::write(buf);
+    }
+    return nullptr;
+}
+
+
+void logData()
+{
+    if (!LogHandler::logging)
+        return;
+
+    if (LogHandler::dataLog.size() < LogHandler::dataLog.capacity())
+        LogHandler::dataLog.push({LogHandler::logFun1(),
+                                  LogHandler::logFun2(),
+                                  LogHandler::logFun3()});
+}
+
+
+void writeLog()
+{
+    if (LogHandler::logging && LogHandler::dataLog.size() >= LogHandler::dataLog.capacity())
+    {
+        char buf[32];
+
+        switch (LogHandler::numLogging)
+        {
+        case 1:
+            for (int i = LogHandler::dataLog.size()-1; i >= 0; --i)
+            {
+                snprintf(buf, 32, "\n%.6f", LogHandler::dataLog[i][0]);
+                RadioTerminal::write(buf);
+            }
+            break;
+        case 2:
+            for (int i = LogHandler::dataLog.size()-1; i >= 0; --i)
+            {
+                snprintf(buf, 32, "\n%.6f%.6f", LogHandler::dataLog[i][0],
+                                                LogHandler::dataLog[i][1]);
+                RadioTerminal::write(buf);
+            }
+            break;
+        case 3:
+            for (int i = LogHandler::dataLog.size()-1; i >= 0; --i)
+            {
+                snprintf(buf, 32, "\n%.6f,%.6f,%.6f", LogHandler::dataLog[i][0],
+                                                    LogHandler::dataLog[i][1],
+                                                    LogHandler::dataLog[i][2]);
+                RadioTerminal::write(buf);
+            }
+            break;
+        }
+
+        LogHandler::logging = false;
+        LogHandler::dataLog.clear();
+        RadioTerminal::terminateCmd();
+    }
+}
+
+
 void setupCommands()
 {
     RadioTerminal::addCommand("w", &watch);
     RadioTerminal::addCommand("p", &print);
     RadioTerminal::addCommand("s", &set);
+    RadioTerminal::addCommand("l", &log);
 }
 
 

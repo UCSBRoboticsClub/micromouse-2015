@@ -6,5 +6,8 @@
 
 void setupCommands();
 
+void logData();
+void writeLog();
+
 
 #endif // COMMANDS_H

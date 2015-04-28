@@ -44,7 +44,8 @@ void setup()
     dthdt.setTimeConst(dt, 0.1f);
     dsdt.setTimeConst(dt, 0.1f);
 
-    thetaController.setTuning(1.f, 0.f, 0.f);
+    thetaController.setTuning(1.f, 0.f, 0.01f);
+    thetaController.setDerivLowpassFreq(30.f);
     thetaController.setOutputLimits(-0.2f, 0.2f);
 
     VL6180X::setup();
@@ -65,7 +66,7 @@ void setup()
 
 void loop()
 {
-
+    writeLog();
 }
 
 
@@ -154,32 +155,36 @@ void controlLoop()
         *front = (1.f - cfront)*(*front) + frontDir*cfront*(frontOffset - fdist*std::cos(state.theta - thoffset));
 
     // Change current cell if robot has moved far enough
-    const float hyst = 0.01f;
+    const float hyst = 0.02f;
     if (state.x > cellw*0.5f + hyst && currentCell.i < mazem - 1)
     {
         state.x -= cellw;
+        target.x -= cellw;
         ++currentCell.i;
     }
     if (state.y > cellw*0.5f + hyst && currentCell.j < mazen - 1)
     {
         state.y -= cellw;
+        target.y -= cellw;
         ++currentCell.j;
     }
     if (state.x < -(cellw*0.5f + hyst) && currentCell.i > 0)
     {
         state.x += cellw;
+        target.x += cellw;
         --currentCell.i;
     }
     if (state.y > -(cellw*0.5f + hyst) && currentCell.j > 0)
     {
         state.y += cellw;
+        target.y += cellw;
         --currentCell.j;
     }
         
     // Move towards target
-    if (std::fabs(target.x - state.x) < 0.002 &&
-        std::fabs(target.y - state.y) < 0.002 &&
-        std::fabs(target.theta - state.theta) < 0.01)
+    if (std::fabs(target.x - state.x) < 0.02f &&
+        std::fabs(target.y - state.y) < 0.02f &&
+        std::fabs(target.theta - state.theta) < 0.1f)
     {
         // Don't move if close enough to the target
         rightWheel.setVelocity(0.f);
@@ -200,6 +205,8 @@ void controlLoop()
         speed = speed > 0.f ? speed : 0.f;
         if (targetDist < slowDownDist)
             speed = speed * targetDist / slowDownDist;
+        if ((target.x - state.x)*std::cos(target.theta) + (target.y - state.y)*std::sin(target.theta) < 0.f)
+            speed = -speed;
         rightWheel.setVelocity(speed + thctrl);
         leftWheel.setVelocity(speed - thctrl);
     }
@@ -207,6 +214,8 @@ void controlLoop()
     // Send commands to wheels
     leftWheel.update();
     rightWheel.update();
+
+    logData();
 
     rled(0);
 }
