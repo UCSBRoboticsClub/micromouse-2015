@@ -217,7 +217,7 @@ namespace RadioTerminal
             config |= CONFIG_PRIM_RX;
             setRegister(CONFIG, config);
             setRegister(STATUS, STATUS_TX_DS);
-            digitalWriteFast(cePin, 1);
+            digitalWrite(cePin, 1); // This can't be digitalWriteFast for some reason
         }
         
         #ifdef USB_SERIAL_ENABLE
