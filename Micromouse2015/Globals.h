@@ -63,6 +63,7 @@ extern float thgoal;
 extern float therr;
 extern float thctrl;
 extern float speed;
+extern float maxSpeed;
 extern PIDController thetaController;
 extern float ctheta;
 extern float cside;

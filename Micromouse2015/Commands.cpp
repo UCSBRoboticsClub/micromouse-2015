@@ -41,7 +41,7 @@ const Setter setList[] =
     {"t.x", SETFLOAT(target.x)},
     {"t.y", SETFLOAT(target.y)},
     {"t.th", SETFLOAT(target.theta)},
-    {"speed", SETFLOAT(speed)},
+    {"mspeed", SETFLOAT(maxSpeed)},
     {"cside", SETFLOAT(cside)},
     {"cfront", SETFLOAT(cfront)},
     {"ctheta", SETFLOAT(ctheta)},
@@ -87,6 +87,7 @@ const Getter getList[] =
     {"therr", GET(therr)},
     {"thctrl", GET(thctrl)},
     {"speed", GET(speed)},
+    {"mspeed", GET(maxSpeed)},
     {"cside", GET(cside)},
     {"cfront", GET(cfront)},
     {"ctheta", GET(ctheta)},
@@ -376,8 +377,8 @@ void writeLog()
         case 2:
             for (int i = LogHandler::dataLog.size()-1; i >= 0; --i)
             {
-                snprintf(buf, 32, "\n%.6f%.6f", LogHandler::dataLog[i][0],
-                                                LogHandler::dataLog[i][1]);
+                snprintf(buf, 32, "\n%.6f,%.6f", LogHandler::dataLog[i][0],
+                                                 LogHandler::dataLog[i][1]);
                 RadioTerminal::write(buf);
             }
             break;
@@ -385,8 +386,8 @@ void writeLog()
             for (int i = LogHandler::dataLog.size()-1; i >= 0; --i)
             {
                 snprintf(buf, 32, "\n%.6f,%.6f,%.6f", LogHandler::dataLog[i][0],
-                                                    LogHandler::dataLog[i][1],
-                                                    LogHandler::dataLog[i][2]);
+                                                      LogHandler::dataLog[i][1],
+                                                      LogHandler::dataLog[i][2]);
                 RadioTerminal::write(buf);
             }
             break;

@@ -39,9 +39,9 @@ void setup()
     controlTimer.begin(controlLoop, controlPeriodUs);
     controlTimer.priority(144);
 
-    drdt.setTimeConst(dtsensor, 0.1f);
-    dfdt.setTimeConst(dtsensor, 0.1f);
-    dldt.setTimeConst(dtsensor, 0.1f);
+    drdt.setTimeConst(dtsensor, 0.3f);
+    dfdt.setTimeConst(dtsensor, 0.3f);
+    dldt.setTimeConst(dtsensor, 0.3f);
     dthdt.setTimeConst(dt, 0.1f);
     dsdt.setTimeConst(dt, 0.1f);
 
@@ -140,13 +140,13 @@ void controlLoop()
     if (rdist < 0.15f && circleDist(state.theta, thoffset) < 0.5f &&
         std::fabs(dsdt) > 0.01f && std::fabs(dthdt) < 0.5f)
     {
-        const float thMeas = thoffset - limit(drdt/(dsdt - dthdt*(sensw*0.5f + rdist)), 0.25f*pi);
+        const float thMeas = thoffset + limit(drdt/(dsdt - dthdt*(sensw*0.5f + rdist)), 0.25f*pi);
         state.theta = (1.f - ctheta)*state.theta + ctheta*thMeas;
     }
     if (ldist < 0.15f && circleDist(state.theta, thoffset) < 0.5f &&
         std::fabs(dsdt) > 0.01f && std::fabs(dthdt) < 0.5f)
     {
-        const float thMeas = thoffset + limit(dldt/(dsdt - dthdt*(sensw*0.5f + ldist)), 0.25f*pi);
+        const float thMeas = thoffset - limit(dldt/(dsdt - dthdt*(sensw*0.5f + ldist)), 0.25f*pi);
         state.theta = (1.f - ctheta)*state.theta + ctheta*thMeas;
     }
 
@@ -212,7 +212,6 @@ void controlLoop()
         
         thctrl *= slowDownFactor;
 
-        const float maxSpeed = 0.2f;
         speed = maxSpeed*std::cos(therr)*slowDownFactor;
         speed = speed > 0.f ? speed : 0.f;
         if ((target.x - state.x)*std::cos(target.theta) + (target.y - state.y)*std::sin(target.theta) < 0.f)
@@ -231,6 +230,10 @@ void controlLoop()
 }
 
 
+int rholdoff = 0;
+int fholdoff = 0;
+int lholdoff = 0;
+
 void sensorLoop()
 {
     const float drlast = rightSensor.getDistance();
@@ -241,9 +244,35 @@ void sensorLoop()
     frontSensor.poll();
     leftSensor.poll();
 
-    drdt.push(rightSensor.getDistance() - drlast);
-    dfdt.push(frontSensor.getDistance() - dflast);
-    dldt.push(leftSensor.getDistance() - dllast);
+    // Calculate raw sensor derivatives
+    const float drdtnew = (rightSensor.getDistance() - drlast) / dtsensor;
+    const float dfdtnew = (frontSensor.getDistance() - dflast) / dtsensor;
+    const float dldtnew = (leftSensor.getDistance() - dllast) / dtsensor;
+
+    // If the raw derivative is high, don't add it to the filter for a while
+    const float threshold = 0.5f;
+    const int holdoffSteps = 8;
+    if (std::fabs(drdtnew) > threshold)
+        rholdoff = holdoffSteps;
+    if (std::fabs(dfdtnew) > threshold)
+        lholdoff = holdoffSteps;
+    if (std::fabs(dldtnew) > threshold)
+        lholdoff = holdoffSteps;
+
+    if (rholdoff > 0)
+        --rholdoff;
+    else
+        drdt.push(drdtnew);
+
+    if (fholdoff > 0)
+        --fholdoff;
+    else
+        dfdt.push(dfdtnew);
+
+    if (lholdoff > 0)
+        --lholdoff;
+    else
+        dldt.push(dldtnew);
 }
 
 
