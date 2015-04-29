@@ -18,6 +18,7 @@ IntervalTimer sensorTimer;
 void controlLoop();
 void sensorLoop();
 float circleDist(float a, float b);
+float stateDist(State s, State t);
 float limit(float x, float lim);
 
 
@@ -44,7 +45,7 @@ void setup()
     dthdt.setTimeConst(dt, 0.1f);
     dsdt.setTimeConst(dt, 0.1f);
 
-    thetaController.setTuning(1.f, 0.f, 0.01f);
+    thetaController.setTuning(0.5f, 0.f, 0.005f);
     thetaController.setDerivLowpassFreq(30.f);
     thetaController.setOutputLimits(-0.2f, 0.2f);
 
@@ -136,12 +137,14 @@ void controlLoop()
     const float fdist = frontSensor.getDistance();
     const float ldist = leftSensor.getDistance();
 
-    if (rdist < 0.15f && circleDist(state.theta, thoffset) < 0.5f && std::fabs(dsdt) > 0.01)
+    if (rdist < 0.15f && circleDist(state.theta, thoffset) < 0.5f &&
+        std::fabs(dsdt) > 0.01f && std::fabs(dthdt) < 0.5f)
     {
         const float thMeas = thoffset - limit(drdt/(dsdt - dthdt*(sensw*0.5f + rdist)), 0.25f*pi);
         state.theta = (1.f - ctheta)*state.theta + ctheta*thMeas;
     }
-    if (ldist < 0.15f && circleDist(state.theta, thoffset) < 0.5f && std::fabs(dsdt) > 0.01)
+    if (ldist < 0.15f && circleDist(state.theta, thoffset) < 0.5f &&
+        std::fabs(dsdt) > 0.01f && std::fabs(dthdt) < 0.5f)
     {
         const float thMeas = thoffset + limit(dldt/(dsdt - dthdt*(sensw*0.5f + ldist)), 0.25f*pi);
         state.theta = (1.f - ctheta)*state.theta + ctheta*thMeas;
@@ -182,36 +185,43 @@ void controlLoop()
     }
         
     // Move towards target
-    if (std::fabs(target.x - state.x) < 0.02f &&
-        std::fabs(target.y - state.y) < 0.02f &&
-        circleDist(target.theta, state.theta) < 0.1f)
+    const float deadband = 0.01f;
+    const float thDeadband = deadband + 0.01f;
+    const float slowDownDist = deadband + 0.02f;
+    targetDist = stateDist(state, target);
+
+    if (targetDist < thDeadband)
+        thgoal = target.theta;
+    else
+        thgoal = 2.f*std::atan2(target.y - state.y, target.x - state.x) - target.theta;
+        
+    therr = std::fmod(thgoal - state.theta + 7.f*pi, 2.f*pi) - pi;
+    thctrl = thetaController.update(therr);
+
+    if (targetDist < deadband)
     {
-        // Don't move if close enough to the target
-        rightWheel.setVelocity(0.f);
-        leftWheel.setVelocity(0.f);
+        speed = 0.f;
     }
     else
     {
-        const float thp = std::atan2(target.y - state.y, target.x - state.x);
-        thgoal = 2.f*thp - target.theta;
-        therr = std::fmod(thgoal - state.theta + 7.f*pi, 2.f*pi) - pi;
-        thctrl = thetaController.update(therr);
+        float slowDownFactor = 1.f;
+        if (targetDist < slowDownDist)
+            slowDownFactor = (targetDist - deadband) / (slowDownDist - deadband);
+        if (slowDownFactor < 0.f) // shouldn't happen
+            slowDownFactor = 0.f;
+        
+        thctrl *= slowDownFactor;
 
         const float maxSpeed = 0.2f;
-        const float slowDownDist = 0.03f;
-        const float targetDist = std::sqrt((target.x - state.x)*(target.x - state.x) +
-                                           (target.y - state.y)*(target.y - state.y));
-        speed = maxSpeed*std::cos(therr);
+        speed = maxSpeed*std::cos(therr)*slowDownFactor;
         speed = speed > 0.f ? speed : 0.f;
-        if (targetDist < slowDownDist)
-            speed = speed * targetDist / slowDownDist;
         if ((target.x - state.x)*std::cos(target.theta) + (target.y - state.y)*std::sin(target.theta) < 0.f)
             speed = -speed;
-        rightWheel.setVelocity(speed + thctrl);
-        leftWheel.setVelocity(speed - thctrl);
     }
 
     // Send commands to wheels
+    rightWheel.setVelocity(speed + thctrl);
+    leftWheel.setVelocity(speed - thctrl);
     leftWheel.update();
     rightWheel.update();
 
@@ -240,6 +250,20 @@ void sensorLoop()
 float circleDist(float a, float b)
 {
     return std::fabs(std::fmod(a - b + 3.f*pi, 2.f*pi) - pi);
+}
+
+
+float stateDist(State s, State t)
+{
+    const float normFactor = 0.3f;
+    
+    const float vx = std::cos(s.theta);
+    const float vy = std::sin(s.theta);
+    const float xdiff = t.x - s.x;
+    const float ydiff = t.y - s.y;
+    const float tanDist = vx*xdiff + vy*ydiff;
+    const float normDist = (-vy*xdiff + vx*ydiff) * normFactor;
+    return std::sqrt(tanDist*tanDist + normDist*normDist);
 }
 
 

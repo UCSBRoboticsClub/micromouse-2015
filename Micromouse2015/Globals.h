@@ -67,6 +67,7 @@ extern PIDController thetaController;
 extern float ctheta;
 extern float cside;
 extern float cfront;
+extern float targetDist;
 
 extern Wheel leftWheel;
 extern Wheel rightWheel;

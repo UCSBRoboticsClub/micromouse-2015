@@ -20,6 +20,7 @@ PIDController thetaController(dt);
 float ctheta = 0.01f;
 float cside = 0.01f;
 float cfront = 0.01f;
+float targetDist = 0.f;
 
 Wheel leftWheel(motorLR, motorLF, encoderL1, encoderL2, dt, wheelCirc, ppr);
 Wheel rightWheel(motorRR, motorRF, encoderR1, encoderR2, dt, wheelCirc, ppr);
