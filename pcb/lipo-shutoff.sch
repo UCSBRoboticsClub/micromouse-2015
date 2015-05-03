@@ -1729,7 +1729,7 @@ Standard 0603 ceramic capacitor, and 0.1" leaded capacitor.</description>
 <plain>
 </plain>
 <instances>
-<instance part="Q1" gate="G$1" x="48.26" y="25.4" rot="R90"/>
+<instance part="Q1" gate="G$1" x="48.26" y="25.4" rot="MR90"/>
 <instance part="U1" gate="G$1" x="48.26" y="-7.62" rot="MR0"/>
 <instance part="GND1" gate="1" x="66.04" y="-10.16"/>
 <instance part="JP1" gate="G$1" x="10.16" y="25.4" rot="MR180"/>
@@ -1793,34 +1793,34 @@ Standard 0603 ceramic capacitor, and 0.1" leaded capacitor.</description>
 <net name="N$1" class="0">
 <segment>
 <pinref part="JP1" gate="G$1" pin="1"/>
-<pinref part="Q1" gate="G$1" pin="D"/>
 <wire x1="17.78" y1="25.4" x2="30.48" y2="25.4" width="0.1524" layer="91"/>
 <pinref part="R3" gate="G$1" pin="2"/>
-<wire x1="30.48" y1="25.4" x2="43.18" y2="25.4" width="0.1524" layer="91"/>
 <wire x1="30.48" y1="25.4" x2="30.48" y2="20.32" width="0.1524" layer="91"/>
+<pinref part="Q1" gate="G$1" pin="S"/>
+<wire x1="30.48" y1="25.4" x2="43.18" y2="25.4" width="0.1524" layer="91"/>
 <junction x="30.48" y="25.4"/>
 </segment>
 </net>
 <net name="N$4" class="0">
 <segment>
-<pinref part="Q1" gate="G$1" pin="S"/>
 <wire x1="78.74" y1="25.4" x2="66.04" y2="25.4" width="0.1524" layer="91"/>
 <pinref part="JP2" gate="G$1" pin="1"/>
 <pinref part="U1" gate="G$1" pin="VS"/>
 <wire x1="66.04" y1="25.4" x2="55.88" y2="25.4" width="0.1524" layer="91"/>
-<wire x1="55.88" y1="25.4" x2="53.34" y2="25.4" width="0.1524" layer="91"/>
 <wire x1="38.1" y1="-5.08" x2="35.56" y2="-5.08" width="0.1524" layer="91"/>
 <wire x1="35.56" y1="-5.08" x2="35.56" y2="2.54" width="0.1524" layer="91"/>
 <wire x1="35.56" y1="2.54" x2="55.88" y2="2.54" width="0.1524" layer="91"/>
 <wire x1="55.88" y1="2.54" x2="55.88" y2="25.4" width="0.1524" layer="91"/>
 <pinref part="R1" gate="G$1" pin="2"/>
 <wire x1="66.04" y1="22.86" x2="66.04" y2="25.4" width="0.1524" layer="91"/>
-<junction x="55.88" y="25.4"/>
 <junction x="66.04" y="25.4"/>
 <pinref part="C2" gate="G$1" pin="1"/>
 <wire x1="35.56" y1="-5.08" x2="22.86" y2="-5.08" width="0.1524" layer="91"/>
 <wire x1="22.86" y1="-5.08" x2="22.86" y2="-7.62" width="0.1524" layer="91"/>
 <junction x="35.56" y="-5.08"/>
+<pinref part="Q1" gate="G$1" pin="D"/>
+<wire x1="53.34" y1="25.4" x2="55.88" y2="25.4" width="0.1524" layer="91"/>
+<junction x="55.88" y="25.4"/>
 </segment>
 </net>
 <net name="N$3" class="0">
