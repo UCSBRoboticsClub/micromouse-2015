@@ -52,6 +52,7 @@ struct State
 extern State state;
 extern State target;
 extern Node currentCell;
+extern Node targetCell;
 extern int lCount;
 extern int rCount;
 extern LowPass drdt;

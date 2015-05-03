@@ -5,6 +5,7 @@
 State state = {0.f, 0.f, 0.f};
 State target = {0.f, 0.f, 0.f};
 Node currentCell = {0, 0};
+Node targetCell = {0, 0};
 int lCount = 0;
 int rCount = 0;
 LowPass drdt;

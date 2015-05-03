@@ -150,40 +150,50 @@ void controlLoop()
         state.theta = (1.f - ctheta)*state.theta + ctheta*thMeas;
     }
 
-    if (rdist < 0.15f)
+    if (rdist < 0.15f && std::fabs(dthdt) < 0.5f)
         *side = (1.f - cside)*(*side) + sideDir*cside*(sideOffset - rdist*std::cos(state.theta - thoffset));
-    if (ldist < 0.15f)
+    if (ldist < 0.15f && std::fabs(dthdt) < 0.5f)
         *side = (1.f - cside)*(*side) - sideDir*cside*(sideOffset - ldist*std::cos(state.theta - thoffset));
-    if (fdist < 0.15f)
+    if (fdist < 0.15f && std::fabs(dthdt) < 0.5f)
         *front = (1.f - cfront)*(*front) + frontDir*cfront*(frontOffset - fdist*std::cos(state.theta - thoffset));
 
     // Change current cell if robot has moved far enough
     const float hyst = 0.02f;
+    bool newCell = false;
     if (state.x > cellw*0.5f + hyst && currentCell.i < mazem - 1)
     {
         state.x -= cellw;
         target.x -= cellw;
         ++currentCell.i;
+        newCell = true;
     }
     if (state.y > cellw*0.5f + hyst && currentCell.j < mazen - 1)
     {
         state.y -= cellw;
         target.y -= cellw;
         ++currentCell.j;
+        newCell = true;
     }
-    if (state.x < -(cellw*0.5f + hyst) && currentCell.i > 0)
+    if (state.x < -(cellw*0.5f + hyst))// && currentCell.i > 0)
     {
         state.x += cellw;
         target.x += cellw;
         --currentCell.i;
+        newCell = true;
     }
-    if (state.y > -(cellw*0.5f + hyst) && currentCell.j > 0)
+    if (state.y < -(cellw*0.5f + hyst) && currentCell.j > 0)
     {
         state.y += cellw;
         target.y += cellw;
         --currentCell.j;
+        newCell = true;
     }
+
+    if (newCell)
+    {
         
+    }
+
     // Move towards target
     const float deadband = 0.01f;
     const float thDeadband = deadband + 0.01f;
