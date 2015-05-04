@@ -7,10 +7,13 @@
 #include "Commands.h"
 #include "Maze.h"
 #include "BFS.h"
+#include "BitArray2D.h"
 #include <cmath>
 
 
 Maze<16, 16> maze;
+BitArray2D<16, 16> goals;
+NodeStack bfsPath;
 
 IntervalTimer controlTimer;
 IntervalTimer sensorTimer;
@@ -62,14 +65,42 @@ void setup()
 
     maze.setCellWalls(0, 0, {true, false, true, true});
 
-    playSong(startup);
-
+    //playSong(startup);
 }
 
 
 void loop()
 {
+    goals.setAll(false);
+    goals.set(7, 7, true);
+    goals.set(8, 7, true);
+    goals.set(8, 8, true);
+    goals.set(7, 8, true);
+    
+    while (!goals.get(currentCell.i, currentCell.j))
+    {
+        bfs(maze, currentCell, goals, bfsPath);
+        if (bfsPath.size() > 0)
+        {
+            bfsPath.pop();
+            targetCell = bfsPath.pop();
+            while (currentCell != targetCell) delay(10);
+        }
+    }
+    
+    goals.setAll(false);
+    goals.set(0, 0, true);
 
+    while (!goals.get(currentCell.i, currentCell.j))
+    {
+        bfs(maze, currentCell, goals, bfsPath);
+        if (bfsPath.size() > 0)
+        {
+            bfsPath.pop();
+            targetCell = bfsPath.pop();
+            while (currentCell != targetCell) delay(10);
+        }
+    }
 }
 
 

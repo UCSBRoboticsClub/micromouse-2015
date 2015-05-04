@@ -17,7 +17,7 @@ float thgoal = 0.f;
 float therr = 0.f;
 float thctrl = 0.f;
 float speed = 0.f;
-float maxSpeed = 0.2f;
+float maxSpeed = 0.1f;
 PIDController thetaController(dt);
 float ctheta = 0.01f;
 float cside = 0.01f;
