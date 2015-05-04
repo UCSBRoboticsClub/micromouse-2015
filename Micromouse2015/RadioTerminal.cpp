@@ -2,7 +2,6 @@
 #include <Arduino.h>
 #include "nRF24L01P_defs.h"
 #include <SPI.h>
-#include <IntervalTimer.h>
 #include <cctype>
 #include <cstring>
 #include <stdio.h>

@@ -69,7 +69,7 @@ void setup()
 
 void loop()
 {
-    writeLog();
+
 }
 
 
@@ -291,7 +291,7 @@ void controlLoop()
         if (slowDownFactor < 0.f) // shouldn't happen
             slowDownFactor = 0.f;
         
-        //thctrl *= slowDownFactor;
+        thctrl *= slowDownFactor*0.7f + 0.3f;
 
         speed = maxSpeed*std::cos(therr)*slowDownFactor;
         speed = speed > 0.f ? speed : 0.f;

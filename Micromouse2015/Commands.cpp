@@ -131,18 +131,23 @@ const Getter getList[] =
 };
 
 
+IntervalTimer commandTimer;
+void ctimerRefresh();
+
+
 class WatchHandler : public CmdHandler
 {
 public:
     WatchHandler(std::function<float(void)> wf);
-    virtual void sendChar(char c) { timer.end(); RadioTerminal::terminateCmd(); }
+    ~WatchHandler() { watching = false; }
+    virtual void sendChar(char c) { RadioTerminal::terminateCmd(); }
     static std::function<float(void)> watchFun;
-    static IntervalTimer timer;
+    static bool watching;
     static void refresh();
 };
 
 std::function<float(void)> WatchHandler::watchFun;
-IntervalTimer WatchHandler::timer;
+bool WatchHandler::watching = false;
 
 
 CmdHandler* watch(const char* input)
@@ -174,7 +179,7 @@ CmdHandler* watch(const char* input)
 WatchHandler::WatchHandler(std::function<float(void)> wf)
 {
     watchFun = wf;
-    timer.begin(&WatchHandler::refresh, 200000);
+    watching = true;
 }
 
 
@@ -406,12 +411,23 @@ void writeLog()
 }
 
 
+void ctimerRefresh()
+{
+    if (WatchHandler::watching)
+        WatchHandler::refresh();
+
+    writeLog();
+}
+
+
 void setupCommands()
 {
     RadioTerminal::addCommand("w", &watch);
     RadioTerminal::addCommand("p", &print);
     RadioTerminal::addCommand("s", &set);
     RadioTerminal::addCommand("l", &log);
+
+    commandTimer.begin(ctimerRefresh, 200000);
 }
 
 
