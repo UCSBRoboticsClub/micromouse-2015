@@ -49,6 +49,15 @@ struct State
     float theta;
 };
 
+enum class Direction
+{
+    undefined,
+    ipos,
+    jpos,
+    ineg,
+    jneg
+};
+
 extern State state;
 extern State target;
 extern Node currentCell;
@@ -70,6 +79,8 @@ extern float ctheta;
 extern float cside;
 extern float cfront;
 extern float targetDist;
+extern Direction direction;
+extern bool inDeadband;
 
 extern Wheel leftWheel;
 extern Wheel rightWheel;

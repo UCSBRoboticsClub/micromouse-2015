@@ -2,8 +2,8 @@
 #include <Arduino.h>
 
 
-State state = {0.f, 0.f, 0.f};
-State target = {0.f, 0.f, 0.f};
+State state = {0.f, 0.f, pi*0.5f};
+State target = {0.f, 0.f, pi*0.5f};
 Node currentCell = {0, 0};
 Node targetCell = {0, 0};
 int lCount = 0;
@@ -23,6 +23,8 @@ float ctheta = 0.01f;
 float cside = 0.01f;
 float cfront = 0.01f;
 float targetDist = 0.f;
+Direction direction = Direction::undefined;
+bool inDeadband = false;
 
 Wheel leftWheel(motorLR, motorLF, encoderL1, encoderL2, dt, wheelCirc, ppr);
 Wheel rightWheel(motorRR, motorRF, encoderR1, encoderR2, dt, wheelCirc, ppr);

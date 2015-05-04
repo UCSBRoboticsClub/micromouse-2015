@@ -60,7 +60,9 @@ void setup()
     RadioTerminal::initialize();
     setupCommands();
 
-    //playSong(mortalkombat);
+    maze.setCellWalls(0, 0, {true, false, true, true});
+
+    playSong(startup);
 
 }
 
@@ -98,33 +100,38 @@ void controlLoop()
     dsdt.push(dDist / dt);
 
     // Determine which coordinates correspond to the sides of the robot
+    direction = Direction::undefined;
     float dummy = 0.f;
     float* side = &dummy;
     float* front = &dummy;
     float sideDir = 0.f;
     float frontDir = 0.f;
     float thoffset = 0.f;
-    const float thwidth2 = pi/12.f;
+    const float thwidth2 = pi/8.f;
     if (circleDist(state.theta, 0.f) < thwidth2)
     {
+        direction = Direction::ipos;
         side = &state.y; sideDir = -1.f;
         front = &state.x; frontDir = 1.f;
         thoffset = state.theta < pi ? 0 : 2.f*pi;
     }
     else if (circleDist(state.theta, pi*0.5f) < thwidth2)
     {
+        direction = Direction::jpos;
         side = &state.x; sideDir = 1.f;
         front = &state.y; frontDir = 1.f;
         thoffset = pi*0.5f;
     }
     else if (circleDist(state.theta, pi) < thwidth2)
     {
+        direction = Direction::ineg;
         side = &state.y; sideDir = 1.f;
         front = &state.x; frontDir = -1.f;
         thoffset = pi;
     }
     else if (circleDist(state.theta, pi*1.5f) < thwidth2)
     {
+        direction = Direction::jneg;
         side = &state.x; sideDir = -1.f;
         front = &state.y; frontDir = -1.f;
         thoffset = pi*1.5f;
@@ -138,13 +145,13 @@ void controlLoop()
     const float ldist = leftSensor.getDistance();
 
     if (rdist < 0.15f && circleDist(state.theta, thoffset) < 0.5f &&
-        std::fabs(dsdt) > 0.01f && std::fabs(dthdt) < 0.5f)
+        std::fabs(dsdt) > 0.01f && std::fabs(dthdt) < 0.5f && std::fabs(dthdt)/std::fabs(dsdt) < 10.f)
     {
         const float thMeas = thoffset + limit(drdt/(dsdt - dthdt*(sensw*0.5f + rdist)), 0.25f*pi);
         state.theta = (1.f - ctheta)*state.theta + ctheta*thMeas;
     }
     if (ldist < 0.15f && circleDist(state.theta, thoffset) < 0.5f &&
-        std::fabs(dsdt) > 0.01f && std::fabs(dthdt) < 0.5f)
+        std::fabs(dsdt) > 0.01f && std::fabs(dthdt) < 0.5f && std::fabs(dthdt)/std::fabs(dsdt) < 10.f)
     {
         const float thMeas = thoffset - limit(dldt/(dsdt - dthdt*(sensw*0.5f + ldist)), 0.25f*pi);
         state.theta = (1.f - ctheta)*state.theta + ctheta*thMeas;
@@ -174,7 +181,7 @@ void controlLoop()
         ++currentCell.j;
         newCell = true;
     }
-    if (state.x < -(cellw*0.5f + hyst))// && currentCell.i > 0)
+    if (state.x < -(cellw*0.5f + hyst) && currentCell.i > 0)
     {
         state.x += cellw;
         target.x += cellw;
@@ -189,16 +196,80 @@ void controlLoop()
         newCell = true;
     }
 
+    // Fill in maze walls
     if (newCell)
     {
-        
+        const bool rwall = rightSensor.getDistance() < 0.1f;
+        const bool fwall = frontSensor.getDistance() < 0.2f;
+        const bool lwall = leftSensor.getDistance() < 0.1f;
+
+        auto cw = maze.getCellWalls(currentCell.i, currentCell.j);
+        switch (direction)
+        {
+        case Direction::ipos:
+            cw = {fwall, lwall, cw[2], rwall}; break;
+        case Direction::jpos:
+            cw = {rwall, fwall, lwall, cw[3]}; break;
+        case Direction::ineg:
+            cw = {cw[0], rwall, fwall, lwall}; break;
+        case Direction::jneg:
+            cw = {lwall, cw[1], rwall, fwall}; break;
+        case Direction::undefined: break;
+        }
+        maze.setCellWalls(currentCell.i, currentCell.j, cw);
+    }
+
+    // Choose target state
+    const float xdiff = cellw*(targetCell.i - currentCell.i) - state.x;
+    const float ydiff = cellw*(targetCell.j - currentCell.j) - state.y;
+    
+    const float radius = cellw*0.5f + 0.03f;
+    if (xdiff*xdiff + ydiff*ydiff < radius*radius)
+    {
+        target.x = cellw*(targetCell.i - currentCell.i);
+        target.y = cellw*(targetCell.j - currentCell.j);
+        // leave previous target.theta
+    }
+    else
+    {
+        if (std::fabs(xdiff) > std::fabs(ydiff))
+        {
+            if (xdiff > 0.f)
+            {
+                target.x = cellw*(targetCell.i - currentCell.i) + cellw*0.5f;
+                target.y = cellw*(targetCell.j - currentCell.j);
+                target.theta = 0.f;
+            }
+            else
+            {
+                target.x = cellw*(targetCell.i - currentCell.i) - cellw*0.5f;
+                target.y = cellw*(targetCell.j - currentCell.j);
+                target.theta = pi;
+            }
+        }
+        else
+        {
+            if (ydiff > 0.f)
+            {
+                target.x = cellw*(targetCell.i - currentCell.i);
+                target.y = cellw*(targetCell.j - currentCell.j) + cellw*0.5f;
+                target.theta = pi*0.5f;
+            }
+            else
+            {
+                target.x = cellw*(targetCell.i - currentCell.i);
+                target.y = cellw*(targetCell.j - currentCell.j) - cellw*0.5f;
+                target.theta = pi*1.5f;
+            }
+        }
     }
 
     // Move towards target
-    const float deadband = 0.01f;
-    const float thDeadband = deadband + 0.01f;
+    const float deadband = inDeadband ? 0.011f : 0.01f;
+    const float thDeadband = deadband; // remove thDeadband if this works
     const float slowDownDist = deadband + 0.02f;
     targetDist = stateDist(state, target);
+    inDeadband = targetDist < thDeadband;
 
     if (targetDist < thDeadband)
         thgoal = target.theta;
@@ -220,7 +291,7 @@ void controlLoop()
         if (slowDownFactor < 0.f) // shouldn't happen
             slowDownFactor = 0.f;
         
-        thctrl *= slowDownFactor;
+        //thctrl *= slowDownFactor;
 
         speed = maxSpeed*std::cos(therr)*slowDownFactor;
         speed = speed > 0.f ? speed : 0.f;
