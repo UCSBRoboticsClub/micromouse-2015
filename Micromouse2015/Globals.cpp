@@ -25,6 +25,7 @@ float cfront = 0.01f;
 float targetDist = 0.f;
 Direction direction = Direction::undefined;
 bool inDeadband = false;
+Maze<16, 16> maze;
 
 Wheel leftWheel(motorLR, motorLF, encoderL1, encoderL2, dt, wheelCirc, ppr);
 Wheel rightWheel(motorRR, motorRF, encoderR1, encoderR2, dt, wheelCirc, ppr);

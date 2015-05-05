@@ -6,6 +6,7 @@
 #include "LowPass.h"
 #include "PIDController.h"
 #include "BFS.h"
+#include "Maze.h"
 
 
 const int motorRF = 21; // right forward motor pin
@@ -81,6 +82,7 @@ extern float cfront;
 extern float targetDist;
 extern Direction direction;
 extern bool inDeadband;
+extern Maze<16, 16> maze;
 
 extern Wheel leftWheel;
 extern Wheel rightWheel;

@@ -44,7 +44,7 @@ public:
     void clear();
     void randomize();
 
-private:
+//private:
     BitArray2D<m - 1, n> mWalls;
     BitArray2D<m, n - 1> nWalls;
 };

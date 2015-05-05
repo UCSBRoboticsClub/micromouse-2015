@@ -5,13 +5,11 @@
 #include "Songs.h"
 #include "RadioTerminal.h"
 #include "Commands.h"
-#include "Maze.h"
 #include "BFS.h"
 #include "BitArray2D.h"
 #include <cmath>
 
 
-Maze<16, 16> maze;
 BitArray2D<16, 16> goals;
 NodeStack bfsPath;
 
@@ -71,6 +69,8 @@ void setup()
 
 void loop()
 {
+    playSong(startup);
+
     goals.setAll(false);
     goals.set(7, 7, true);
     goals.set(8, 7, true);

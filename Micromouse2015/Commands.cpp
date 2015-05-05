@@ -194,7 +194,7 @@ void WatchHandler::refresh()
 
 CmdHandler* print(const char* input)
 {
-    char buf[32];
+    char buf[64];
     const int getListSize = (sizeof getList) / (sizeof getList[0]);
     
     const char* s = std::strchr(input, ' ');
@@ -212,6 +212,36 @@ CmdHandler* print(const char* input)
                 return nullptr;
             }
         }
+		
+		if (std::strncmp(s, "maze", 4) == 0)
+		{
+			const char rowstr[] = "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\n";
+			const char colstr[] = "| | | | | | | | | | | | | | | | |\n";
+			
+			RadioTerminal::write(rowstr);
+			
+			for (int i = 0; i < 15; ++i)
+			{
+				std::strcpy(buf, colstr);
+				for (int j = 0; j < 15; ++j)
+					buf[2+j*2] = maze.nWalls.get(i, j) ? '|' : ' ';
+				RadioTerminal::write(buf);
+				
+				std::strcpy(buf, rowstr);
+				for (int j = 0; j < 16; ++j)
+					buf[1+j*2] = maze.mWalls.get(i, j) ? '-' : ' ';
+				RadioTerminal::write(buf);
+			}
+			
+			std::strcpy(buf, colstr);
+			for (int j = 0; j < 15; ++j)
+				buf[2+j*2] = maze.nWalls.get(15, j) ? '|' : ' ';
+			RadioTerminal::write(buf);
+			
+			RadioTerminal::write(rowstr);
+			
+			return nullptr;
+		}
     }
     
     RadioTerminal::write("Usage: p <var>\nValid variables:");
