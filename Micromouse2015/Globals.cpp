@@ -37,11 +37,11 @@ VL6180X leftSensor(2);
 
 void rled(bool on)
 {
-    digitalWriteFast(led2Pin, on); 
+    digitalWriteFast(led1Pin, on); 
 }
 
 
 void lled(bool on)
 {
-    digitalWriteFast(led1Pin, on);
+    digitalWriteFast(led2Pin, on);
 }

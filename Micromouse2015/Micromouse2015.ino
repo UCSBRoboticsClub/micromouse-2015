@@ -63,6 +63,8 @@ void setup()
 
     maze.setCellWalls(0, 0, {true, false, true, true});
 
+    delay(5000);
+
     //playSong(startup);
 }
 
@@ -168,6 +170,8 @@ void controlLoop()
         thoffset = pi*1.5f;
     }
 
+    lled(Direction::undefined == direction ? 1 : 0);
+
     // Add distance sensor measurements to state
     const float sideOffset = (cellw - wallw - sensw)/2.f;
     const float frontOffset = (cellw - wallw)/2.f - fsensoff;
@@ -188,9 +192,9 @@ void controlLoop()
         state.theta = (1.f - ctheta)*state.theta + ctheta*thMeas;
     }
 
-    if (rdist < 0.15f && std::fabs(dthdt) < 0.5f)
+    if (rdist < 0.1f && std::fabs(dthdt) < 0.5f)
         *side = (1.f - cside)*(*side) + sideDir*cside*(sideOffset - rdist*std::cos(state.theta - thoffset));
-    if (ldist < 0.15f && std::fabs(dthdt) < 0.5f)
+    if (ldist < 0.1f && std::fabs(dthdt) < 0.5f)
         *side = (1.f - cside)*(*side) - sideDir*cside*(sideOffset - ldist*std::cos(state.theta - thoffset));
     if (fdist < 0.15f && std::fabs(dthdt) < 0.5f)
         *front = (1.f - cfront)*(*front) + frontDir*cfront*(frontOffset - fdist*std::cos(state.theta - thoffset));
@@ -248,6 +252,8 @@ void controlLoop()
         case Direction::undefined: break;
         }
         maze.setCellWalls(currentCell.i, currentCell.j, cw);
+
+        tone(buzzerPin, 880, 150);
     }
 
     // Choose target state
@@ -267,13 +273,13 @@ void controlLoop()
         {
             if (xdiff > 0.f)
             {
-                target.x = cellw*(targetCell.i - currentCell.i) + cellw*0.5f;
+                target.x = cellw*(targetCell.i - currentCell.i) - cellw*0.5f;
                 target.y = cellw*(targetCell.j - currentCell.j);
                 target.theta = 0.f;
             }
             else
             {
-                target.x = cellw*(targetCell.i - currentCell.i) - cellw*0.5f;
+                target.x = cellw*(targetCell.i - currentCell.i) + cellw*0.5f;
                 target.y = cellw*(targetCell.j - currentCell.j);
                 target.theta = pi;
             }
@@ -283,13 +289,13 @@ void controlLoop()
             if (ydiff > 0.f)
             {
                 target.x = cellw*(targetCell.i - currentCell.i);
-                target.y = cellw*(targetCell.j - currentCell.j) + cellw*0.5f;
+                target.y = cellw*(targetCell.j - currentCell.j) - cellw*0.5f;
                 target.theta = pi*0.5f;
             }
             else
             {
                 target.x = cellw*(targetCell.i - currentCell.i);
-                target.y = cellw*(targetCell.j - currentCell.j) - cellw*0.5f;
+                target.y = cellw*(targetCell.j - currentCell.j) + cellw*0.5f;
                 target.theta = pi*1.5f;
             }
         }
