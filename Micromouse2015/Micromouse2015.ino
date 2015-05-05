@@ -198,7 +198,7 @@ void controlLoop()
         *side = (1.f - cside)*(*side) - sideDir*cside*(sideOffset - ldist*std::cos(state.theta - thoffset));
     if (fdist < 0.15f && std::fabs(dthdt) < 0.5f)
     {
-        const float fdistExp = cellw*0.5f - frontOffset - frontDir*(*front);
+        const float fdistExp = frontOffset - frontDir*(*front);
         float fdistAdj = fdist*std::cos(state.theta - thoffset);
         if (fdistAdj > fdistExp + cellw*0.5f)
             fdistAdj -= cellw;
