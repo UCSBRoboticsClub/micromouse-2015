@@ -197,7 +197,13 @@ void controlLoop()
     if (ldist < 0.1f && std::fabs(dthdt) < 0.5f)
         *side = (1.f - cside)*(*side) - sideDir*cside*(sideOffset - ldist*std::cos(state.theta - thoffset));
     if (fdist < 0.15f && std::fabs(dthdt) < 0.5f)
-        *front = (1.f - cfront)*(*front) + frontDir*cfront*(frontOffset - fdist*std::cos(state.theta - thoffset));
+    {
+        const float fdistExp = cellw*0.5f - frontOffset - frontDir*(*front);
+        float fdistAdj = fdist*std::cos(state.theta - thoffset);
+        if (fdistAdj > fdistExp + cellw*0.5f)
+            fdistAdj -= cellw;
+        *front = (1.f - cfront)*(*front) + frontDir*cfront*(frontOffset - fdistAdj);
+    }
 
     // Change current cell if robot has moved far enough
     const float hyst = 0.02f;
