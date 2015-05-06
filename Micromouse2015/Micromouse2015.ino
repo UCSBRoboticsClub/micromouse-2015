@@ -46,8 +46,8 @@ void setup()
     dthdt.setTimeConst(dt, 0.1f);
     dsdt.setTimeConst(dt, 0.1f);
 
-    thetaController.setTuning(0.5f, 0.f, 0.005f);
-    thetaController.setDerivLowpassFreq(30.f);
+    thetaController.setTuning(0.2f, 0.f, 0.005f);
+    thetaController.setDerivLowpassFreq(10.f);
     thetaController.setOutputLimits(-0.2f, 0.2f);
 
     VL6180X::setup();
@@ -178,25 +178,28 @@ void controlLoop()
     const float rdist = rightSensor.getDistance();
     const float fdist = frontSensor.getDistance();
     const float ldist = leftSensor.getDistance();
+	const bool inMidCell = std::fabs(frontDir*(*front) - 0.04f) < cellw*0.4f;
 
     if (rdist < 0.15f && circleDist(state.theta, thoffset) < 0.5f &&
-        std::fabs(dsdt) > 0.01f && std::fabs(dthdt) < 0.5f && std::fabs(dthdt)/std::fabs(dsdt) < 10.f)
+        std::fabs(dsdt) > 0.01f && std::fabs(dthdt) < 0.5f && 
+        std::fabs(dthdt)/std::fabs(dsdt) < 10.f && inMidCell)
     {
         const float thMeas = thoffset + limit(drdt/(dsdt - dthdt*(sensw*0.5f + rdist)), 0.25f*pi);
         state.theta = (1.f - ctheta)*state.theta + ctheta*thMeas;
     }
     if (ldist < 0.15f && circleDist(state.theta, thoffset) < 0.5f &&
-        std::fabs(dsdt) > 0.01f && std::fabs(dthdt) < 0.5f && std::fabs(dthdt)/std::fabs(dsdt) < 10.f)
+        std::fabs(dsdt) > 0.01f && std::fabs(dthdt) < 0.5f && 
+        std::fabs(dthdt)/std::fabs(dsdt) < 10.f && inMidCell)
     {
         const float thMeas = thoffset - limit(dldt/(dsdt - dthdt*(sensw*0.5f + ldist)), 0.25f*pi);
         state.theta = (1.f - ctheta)*state.theta + ctheta*thMeas;
     }
 
-    if (rdist < 0.1f && std::fabs(dthdt) < 0.5f)
+    if (rdist < 0.1f && std::fabs(dthdt) < 0.5f && inMidCell)
         *side = (1.f - cside)*(*side) + sideDir*cside*(sideOffset - rdist*std::cos(state.theta - thoffset));
-    if (ldist < 0.1f && std::fabs(dthdt) < 0.5f)
+    if (ldist < 0.1f && std::fabs(dthdt) < 0.5f && inMidCell)
         *side = (1.f - cside)*(*side) - sideDir*cside*(sideOffset - ldist*std::cos(state.theta - thoffset));
-    if (fdist < 0.15f && std::fabs(dthdt) < 0.5f)
+    if (fdist < 0.15f && std::fabs(dthdt) < 0.5f && circleDist(state.theta, thoffset) < 0.3f)
     {
         const float fdistExp = frontOffset - frontDir*(*front);
         float fdistAdj = fdist*std::cos(state.theta - thoffset);
@@ -206,7 +209,7 @@ void controlLoop()
     }
 
     // Change current cell if robot has moved far enough
-    const float hyst = 0.02f;
+    const float hyst = 0.03f;
     bool newCell = false;
     if (state.x > cellw*0.5f + hyst && currentCell.i < mazem - 1)
     {
@@ -310,7 +313,7 @@ void controlLoop()
     // Move towards target
     const float deadband = inDeadband ? 0.011f : 0.01f;
     const float thDeadband = deadband; // remove thDeadband if this works
-    const float slowDownDist = deadband + 0.02f;
+    const float slowDownDist = deadband + 0.015f;
     targetDist = stateDist(state, target);
     inDeadband = targetDist < thDeadband;
 
@@ -336,7 +339,8 @@ void controlLoop()
         
         thctrl *= slowDownFactor*0.7f + 0.3f;
 
-        speed = maxSpeed*std::cos(therr)*slowDownFactor;
+        const float therrAdj = std::fabs(therr) < pi*0.25f ? therr*2.f : pi*0.5f;
+        speed = maxSpeed*std::cos(therrAdj)*slowDownFactor;
         speed = speed > 0.f ? speed : 0.f;
         if ((target.x - state.x)*std::cos(target.theta) + (target.y - state.y)*std::sin(target.theta) < 0.f)
             speed = -speed;
