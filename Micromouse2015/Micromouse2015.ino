@@ -46,7 +46,7 @@ void setup()
     dthdt.setTimeConst(dt, 0.1f);
     dsdt.setTimeConst(dt, 0.1f);
 
-    thetaController.setTuning(0.2f, 0.f, 0.005f);
+    thetaController.setTuning(0.4f, 0.f, 0.005f);
     thetaController.setDerivLowpassFreq(10.f);
     thetaController.setOutputLimits(-0.2f, 0.2f);
 
@@ -85,10 +85,20 @@ void loop()
         if (bfsPath.size() > 0)
         {
             bfsPath.pop();
-            targetCell = bfsPath.pop();
+            const Node newTargetCell = bfsPath.pop();
+            if (newTargetCell == prevTargetCell)
+            {
+                manualSlow = true;
+                delay(500);
+                manualSlow = false;
+            }
+            prevTargetCell = targetCell;
+            targetCell = newTargetCell;
             while (currentCell != targetCell) delay(10);
         }
     }
+	
+	maxSpeed = 0.3f;
     
     goals.setAll(false);
     goals.set(0, 0, true);
@@ -170,15 +180,15 @@ void controlLoop()
         thoffset = pi*1.5f;
     }
 
-    lled(Direction::undefined == direction ? 1 : 0);
-
     // Add distance sensor measurements to state
     const float sideOffset = (cellw - wallw - sensw)/2.f;
     const float frontOffset = (cellw - wallw)/2.f - fsensoff;
     const float rdist = rightSensor.getDistance();
     const float fdist = frontSensor.getDistance();
     const float ldist = leftSensor.getDistance();
-	const bool inMidCell = std::fabs(frontDir*(*front) - 0.04f) < cellw*0.4f;
+	const bool inMidCell = std::fabs(frontDir*(*front) + 0.035f - cellw*0.5f) > 0.04f;
+
+    lled(inMidCell);
 
     if (rdist < 0.15f && circleDist(state.theta, thoffset) < 0.5f &&
         std::fabs(dsdt) > 0.01f && std::fabs(dthdt) < 0.5f && 
@@ -337,9 +347,9 @@ void controlLoop()
         if (slowDownFactor < 0.f) // shouldn't happen
             slowDownFactor = 0.f;
         
-        thctrl *= slowDownFactor*0.7f + 0.3f;
+        thctrl *= slowDownFactor*0.5f + 0.5f;
 
-        const float therrAdj = std::fabs(therr) < pi*0.25f ? therr*2.f : pi*0.5f;
+        const float therrAdj = std::fabs(therr*3.f) < pi*0.5f ? therr*3.f : pi*0.5f;
         speed = maxSpeed*std::cos(therrAdj)*slowDownFactor;
         speed = speed > 0.f ? speed : 0.f;
         if ((target.x - state.x)*std::cos(target.theta) + (target.y - state.y)*std::sin(target.theta) < 0.f)
@@ -347,6 +357,12 @@ void controlLoop()
     }
 
     // Send commands to wheels
+    if (manualSlow)
+    {
+        speed *= 0.2f;
+        thctrl *= 0.2f;
+    }
+
     rightWheel.setVelocity(speed + thctrl);
     leftWheel.setVelocity(speed - thctrl);
     leftWheel.update();
