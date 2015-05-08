@@ -88,8 +88,8 @@ void loop()
             const Node newTargetCell = bfsPath.pop();
             if (newTargetCell == prevTargetCell)
             {
-                manualSlow = true;
-                delay(500);
+                //manualSlow = true;
+                //delay(500);
                 manualSlow = false;
             }
             prevTargetCell = targetCell;
@@ -98,7 +98,7 @@ void loop()
         }
     }
 	
-	maxSpeed = 0.3f;
+	maxSpeed += 0.05f;
     
     goals.setAll(false);
     goals.set(0, 0, true);
