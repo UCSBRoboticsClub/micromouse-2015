@@ -46,10 +46,6 @@ void setup()
     dthdt.setTimeConst(dt, 0.1f);
     dsdt.setTimeConst(dt, 0.1f);
 
-    thetaController.setTuning(0.4f, 0.f, 0.005f);
-    thetaController.setDerivLowpassFreq(10.f);
-    thetaController.setOutputLimits(-0.2f, 0.2f);
-
     VL6180X::setup();
     rightSensor.init(0x31);
     frontSensor.init(0x32);
@@ -66,6 +62,7 @@ void setup()
     delay(5000);
 
     //playSong(startup);
+    maxSpeed = 0.15f;
 }
 
 
@@ -78,6 +75,8 @@ void loop()
     goals.set(8, 7, true);
     goals.set(8, 8, true);
     goals.set(7, 8, true);
+
+    maxSpeed += 0.05f;
     
     while (!goals.get(currentCell.i, currentCell.j))
     {
@@ -85,20 +84,14 @@ void loop()
         if (bfsPath.size() > 0)
         {
             bfsPath.pop();
-            const Node newTargetCell = bfsPath.pop();
-            if (newTargetCell == prevTargetCell)
-            {
-                //manualSlow = true;
-                //delay(500);
-                manualSlow = false;
-            }
-            prevTargetCell = targetCell;
-            targetCell = newTargetCell;
+            targetCell = bfsPath.pop();
             while (currentCell != targetCell) delay(10);
         }
     }
-	
-	maxSpeed += 0.05f;
+
+    float tempMaxSpeed = maxSpeed;
+    if (maxSpeed > 0.4f)
+        maxSpeed = 0.4f;
     
     goals.setAll(false);
     goals.set(0, 0, true);
@@ -113,6 +106,13 @@ void loop()
             while (currentCell != targetCell) delay(10);
         }
     }
+
+    //manualSlow = true;
+    target.theta = pi*0.5f;
+    delay(1000);
+    //manualSlow = false;
+
+    maxSpeed = tempMaxSpeed;
 }
 
 
@@ -186,7 +186,7 @@ void controlLoop()
     const float rdist = rightSensor.getDistance();
     const float fdist = frontSensor.getDistance();
     const float ldist = leftSensor.getDistance();
-	const bool inMidCell = std::fabs(frontDir*(*front) + 0.035f - cellw*0.5f) > 0.04f;
+    const bool inMidCell = std::fabs(frontDir*(*front) + 0.035f - cellw*0.5f) > 0.04f;
 
     lled(inMidCell);
 
@@ -251,10 +251,10 @@ void controlLoop()
     }
 
     // Fill in maze walls
-    if (newCell)
+    if (newCell && circleDist(state.theta, target.theta) < 0.5f)
     {
         const bool rwall = rightSensor.getDistance() < 0.1f;
-        const bool fwall = frontSensor.getDistance() < 0.2f;
+        const bool fwall = frontSensor.getDistance() < 0.15f;
         const bool lwall = leftSensor.getDistance() < 0.1f;
 
         auto cw = maze.getCellWalls(currentCell.i, currentCell.j);
@@ -282,9 +282,16 @@ void controlLoop()
     const float radius = cellw*0.5f + 0.03f;
     if (xdiff*xdiff + ydiff*ydiff < radius*radius)
     {
+        const State prevTarget = target;
         target.x = cellw*(targetCell.i - currentCell.i);
         target.y = cellw*(targetCell.j - currentCell.j);
-        // leave previous target.theta
+        if (prevTarget.x != target.x && prevTarget.y != target.y)
+        {
+            if (std::fabs(target.x - prevTarget.x) > std::fabs(target.x - prevTarget.y))
+                target.theta = (target.x > prevTarget.x) ? 0.f : pi;
+            else
+                target.theta = (target.y > prevTarget.y) ? 0.5f*pi : 1.5f*pi;
+        }
     }
     else
     {
@@ -333,7 +340,11 @@ void controlLoop()
         thgoal = 2.f*std::atan2(target.y - state.y, target.x - state.x) - target.theta;
         
     therr = std::fmod(thgoal - state.theta + 7.f*pi, 2.f*pi) - pi;
-    thctrl = thetaController.update(therr);
+    thctrl = thetakp*therr - thetakd*dthdt;
+    if (thctrl > thctrlmax)
+        thctrl = thctrlmax;
+    else if (thctrl < -thctrlmax)
+        thctrl = -thctrlmax;
 
     if (targetDist < deadband)
     {
@@ -430,8 +441,8 @@ float stateDist(State s, State t)
 {
     const float normFactor = 0.3f;
     
-    const float vx = std::cos(s.theta);
-    const float vy = std::sin(s.theta);
+    const float vx = std::cos(t.theta);
+    const float vy = std::sin(t.theta);
     const float xdiff = t.x - s.x;
     const float ydiff = t.y - s.y;
     const float tanDist = vx*xdiff + vy*ydiff;

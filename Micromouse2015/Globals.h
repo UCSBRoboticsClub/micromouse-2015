@@ -76,7 +76,6 @@ extern float therr;
 extern float thctrl;
 extern float speed;
 extern float maxSpeed;
-extern PIDController thetaController;
 extern float ctheta;
 extern float cside;
 extern float cfront;
@@ -85,6 +84,9 @@ extern Direction direction;
 extern bool inDeadband;
 extern Maze<16, 16> maze;
 extern bool manualSlow;
+extern float thetakp;
+extern float thetakd;
+extern float thctrlmax;
 
 extern Wheel leftWheel;
 extern Wheel rightWheel;

@@ -19,7 +19,6 @@ float therr = 0.f;
 float thctrl = 0.f;
 float speed = 0.f;
 float maxSpeed = 0.2f;
-PIDController thetaController(dt);
 float ctheta = 0.03f;
 float cside = 0.1f;
 float cfront = 0.1f;
@@ -28,6 +27,9 @@ Direction direction = Direction::undefined;
 bool inDeadband = false;
 Maze<16, 16> maze;
 bool manualSlow = false;
+float thetakp = 0.4f;
+float thetakd = 0.01f;
+float thctrlmax = 0.2f;
 
 Wheel leftWheel(motorLR, motorLF, encoderL1, encoderL2, dt, wheelCirc, ppr);
 Wheel rightWheel(motorRR, motorRF, encoderR1, encoderR2, dt, wheelCirc, ppr);
