@@ -57,6 +57,14 @@ void setup()
     RadioTerminal::initialize();
     setupCommands();
 
+    if (!RadioTerminal::useRadio)
+    {
+        switch1.init(8, false, true);
+        switch2.init(12, false, true);
+        button1.init(11, false, true);
+        button2.init(10, false, true);
+    }
+
     maze.setCellWalls(0, 0, {true, false, true, true});
 
     delay(5000);
@@ -87,6 +95,7 @@ void loop()
             targetCell = bfsPath.pop();
             while (currentCell != targetCell) delay(10);
         }
+        delay(10);
     }
 
     float tempMaxSpeed = maxSpeed;
@@ -105,6 +114,7 @@ void loop()
             targetCell = bfsPath.pop();
             while (currentCell != targetCell) delay(10);
         }
+        delay(10);
     }
 
     //manualSlow = true;
@@ -428,6 +438,11 @@ void sensorLoop()
         --lholdoff;
     else
         dldt.push(dldtnew);
+
+    switch1.update();
+    switch2.update();
+    button1.update();
+    button2.update();
 }
 
 

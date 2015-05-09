@@ -128,6 +128,10 @@ const Getter getList[] =
     {"rs.d", GET(rightSensor.getDistance())},
     {"ls.d", GET(leftSensor.getDistance())},
     {"fs.d", GET(frontSensor.getDistance())},
+    {"sw1", GET(switch1.pressed())},
+    {"sw2", GET(switch2.pressed())},
+    {"bt1", GET(button1.pressed())},
+    {"bt2", GET(button2.pressed())},
 };
 
 

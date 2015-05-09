@@ -31,6 +31,11 @@ float thetakp = 0.4f;
 float thetakd = 0.01f;
 float thctrlmax = 0.2f;
 
+Button switch1;
+Button switch2;
+Button button1;
+Button button2;
+
 Wheel leftWheel(motorLR, motorLF, encoderL1, encoderL2, dt, wheelCirc, ppr);
 Wheel rightWheel(motorRR, motorRF, encoderR1, encoderR2, dt, wheelCirc, ppr);
 

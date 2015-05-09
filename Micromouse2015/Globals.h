@@ -7,20 +7,21 @@
 #include "PIDController.h"
 #include "BFS.h"
 #include "Maze.h"
+#include "Button.h"
 
 
-const int motorRF = 21; // right forward motor pin
-const int motorRR = 20; // right reverse
-const int motorLR = 22; // left forward
-const int motorLF = 23; // left reverse
-const int encoderR1 = 17; // right encoder
-const int encoderR2 = 16; 
-const int encoderL1 = 14; // left encoder
-const int encoderL2 = 15;
-const int buzzerPin = 5;
 const int led1Pin = 3;
 const int led2Pin = 4;
+const int buzzerPin = 5;
 const int nfaultPin = 7;
+const int encoderL1 = 14; // left encoder
+const int encoderL2 = 15;
+const int encoderR2 = 16; // right encoder
+const int encoderR1 = 17;
+const int motorRR = 20; // right reverse
+const int motorRF = 21; // right forward motor pin
+const int motorLR = 22; // left forward
+const int motorLF = 23; // left reverse
 
 const unsigned int controlFreq = 200; // Hz
 const unsigned int controlPeriodUs = 1000000 / controlFreq;
@@ -87,6 +88,11 @@ extern bool manualSlow;
 extern float thetakp;
 extern float thetakd;
 extern float thctrlmax;
+
+extern Button switch1;
+extern Button switch2;
+extern Button button1;
+extern Button button2;
 
 extern Wheel leftWheel;
 extern Wheel rightWheel;
