@@ -261,7 +261,7 @@ void controlLoop()
     }
 
     // Fill in maze walls
-    if (newCell && circleDist(state.theta, target.theta) < 0.5f)
+    if (newCell && !switch1.pressed() && circleDist(state.theta, target.theta) < 0.5f)
     {
         const bool rwall = rightSensor.getDistance() < 0.1f;
         const bool fwall = frontSensor.getDistance() < 0.15f;
