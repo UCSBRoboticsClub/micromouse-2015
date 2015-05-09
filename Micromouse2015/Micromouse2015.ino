@@ -10,6 +10,18 @@
 #include <cmath>
 
 
+#define YIELD                                   \
+    do {                                        \
+        if (abortFlag) {                        \
+            abortCleanup();                     \
+            return;                             \
+        } else {                                \
+            delay(1);                           \
+        }                                       \
+    } while (false)
+bool abortFlag = false;
+void abortCleanup();
+
 BitArray2D<16, 16> goals;
 NodeStack bfsPath;
 
@@ -93,9 +105,9 @@ void loop()
         {
             bfsPath.pop();
             targetCell = bfsPath.pop();
-            while (currentCell != targetCell) delay(10);
+            while (currentCell != targetCell) YIELD;
         }
-        delay(10);
+        YIELD;
     }
 
     float tempMaxSpeed = maxSpeed;
@@ -112,14 +124,15 @@ void loop()
         {
             bfsPath.pop();
             targetCell = bfsPath.pop();
-            while (currentCell != targetCell) delay(10);
+            while (currentCell != targetCell) YIELD;
         }
-        delay(10);
+        YIELD;
     }
 
     //manualSlow = true;
     target.theta = pi*0.5f;
     delay(1000);
+    YIELD;
     //manualSlow = false;
 
     maxSpeed = tempMaxSpeed;
@@ -443,6 +456,8 @@ void sensorLoop()
     switch2.update();
     button1.update();
     button2.update();
+
+    abortFlag = button1.pressed();
 }
 
 
@@ -469,4 +484,16 @@ float stateDist(State s, State t)
 float limit(float x, float lim)
 {
     return x > lim ? lim : (x < -lim ? -lim : x);
+}
+
+
+void abortCleanup()
+{
+    currentCell = {0, 0};
+    targetCell = currentCell;
+    state = {0.f, 0.f, pi*0.5f};
+    target = state;
+    maxSpeed = 0.15f;
+    delay(1000);
+    abortFlag = false;
 }
