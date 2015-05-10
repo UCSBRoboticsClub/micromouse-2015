@@ -494,6 +494,17 @@ void abortCleanup()
     state = {0.f, 0.f, pi*0.5f};
     target = state;
     maxSpeed = 0.15f;
-    delay(1000);
+
+    const unsigned int startTime = millis();
+    while (millis() < startTime + 3000)
+    {
+        if (button2.pressEdge())
+        {
+            maxSpeed += 0.05f;
+            tone(buzzerPin, maxSpeed*1000, 100);
+            delay(100);
+        }
+    }
+
     abortFlag = false;
 }
