@@ -29,7 +29,7 @@ void Button::update()
 {
     if (pin < 0)
     {
-        state = false;
+        state = !activeState;
         edge = false;
         return;
     }

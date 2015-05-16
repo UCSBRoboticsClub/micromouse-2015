@@ -13,21 +13,25 @@ Wheel::Wheel(int motPin1, int motPin2, int encPin1, int encPin2, float dt, float
     dt(dt),
     count2dist(circumference / cpr)
 {
-    velocity.setCutoffFreq(4.f, dt);
+    velocity.setCutoffFreq(10.f, dt);
+    acceleration.setCutoffFreq(10.f, dt);
+    velocityKd = 0.3f;
 }
 
 void Wheel::update()
 {
-    int count = encoder.read();
+    const int count = encoder.read();
     
-    float position = count * count2dist;
-    float positionControl = positionLoop.update(positionSetpoint - position);
+    const float position = count * count2dist;
+    const float positionControl = positionLoop.update(positionSetpoint - position);
     
     if (positionMode)
         velocitySetpoint = positionControl;
-        
+
+    const float lastVelocity = velocity;
     velocity.push( (count - lastCount) * count2dist / dt );
-    velocityControl = velocityLoop.update(velocitySetpoint - velocity);
+    acceleration.push((velocity - lastVelocity) / dt);
+    velocityControl = velocityLoop.update(velocitySetpoint - velocity, -acceleration*velocityKd);
 
     if (velocitySetpoint == 0.f)
         velocityLoop.zeroIntegral();

@@ -1,6 +1,7 @@
 #include <Encoder.h>
 #include <IntervalTimer.h>
 #include <SPI.h>
+#include <i2c_t3.h>
 #include "Globals.h"
 #include "Songs.h"
 #include "RadioTerminal.h"
@@ -44,10 +45,10 @@ void setup()
     pinMode(led2Pin, OUTPUT);
     pinMode(nfaultPin, INPUT_PULLUP);
     
-    leftWheel.velocityLoop.setTuning(10.f, 20.f, 0.02f);
-    rightWheel.velocityLoop.setTuning(10.f, 20.f, 0.02f);
-    leftWheel.velocityLoop.setDerivLowpassFreq(30.f);
-    rightWheel.velocityLoop.setDerivLowpassFreq(30.f);
+    leftWheel.velocityLoop.setTuning(10.f, 20.f, 0.f);
+    rightWheel.velocityLoop.setTuning(10.f, 20.f, 0.f);
+    leftWheel.velocityLoop.setOutputLimits(-1.f, 1.f);
+    rightWheel.velocityLoop.setOutputLimits(-1.f, 1.f);
 
     controlTimer.begin(controlLoop, controlPeriodUs);
     controlTimer.priority(144);
@@ -110,6 +111,9 @@ void loop()
         YIELD;
     }
 
+    if (switch2.pressed())
+        playSong(maxSpeed > 0.5f ? mortalkombat : recorder);
+
     float tempMaxSpeed = maxSpeed;
     if (maxSpeed > 0.4f)
         maxSpeed = 0.4f;
@@ -164,6 +168,7 @@ void controlLoop()
 
     dthdt.push(dTheta / dt);
     dsdt.push(dDist / dt);
+    wheelBase = wheelBaseMin + dsdt*dsdt*wbConstant;
 
     // Determine which coordinates correspond to the sides of the robot
     direction = Direction::undefined;
@@ -214,14 +219,14 @@ void controlLoop()
     lled(inMidCell);
 
     if (rdist < 0.15f && circleDist(state.theta, thoffset) < 0.5f &&
-        std::fabs(dsdt) > 0.01f && std::fabs(dthdt) < 0.5f && 
+        std::fabs(dsdt) > 0.1f && std::fabs(dthdt) < 0.3f && 
         std::fabs(dthdt)/std::fabs(dsdt) < 10.f && inMidCell)
     {
         const float thMeas = thoffset + limit(drdt/(dsdt - dthdt*(sensw*0.5f + rdist)), 0.25f*pi);
         state.theta = (1.f - ctheta)*state.theta + ctheta*thMeas;
     }
     if (ldist < 0.15f && circleDist(state.theta, thoffset) < 0.5f &&
-        std::fabs(dsdt) > 0.01f && std::fabs(dthdt) < 0.5f && 
+        std::fabs(dsdt) > 0.1f && std::fabs(dthdt) < 0.3f && 
         std::fabs(dthdt)/std::fabs(dsdt) < 10.f && inMidCell)
     {
         const float thMeas = thoffset - limit(dldt/(dsdt - dthdt*(sensw*0.5f + ldist)), 0.25f*pi);
@@ -495,14 +500,15 @@ void abortCleanup()
     target = state;
     maxSpeed = 0.15f;
 
-    const unsigned int startTime = millis();
-    while (millis() < startTime + 3000)
+    unsigned int startTime = millis();
+    while (millis() < startTime + 2000)
     {
         if (button2.pressEdge())
         {
             maxSpeed += 0.05f;
             tone(buzzerPin, maxSpeed*1000, 100);
             delay(100);
+            startTime = millis();
         }
     }
 

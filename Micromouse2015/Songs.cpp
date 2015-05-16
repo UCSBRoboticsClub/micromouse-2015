@@ -23,6 +23,12 @@ void playSong(const char *s)
             noTone(buzzerPin);
         
         delay(t);
+
+        if (button1.pressed())
+        {
+            noTone(buzzerPin);
+            return;
+        }
     }
     
     noTone(buzzerPin);

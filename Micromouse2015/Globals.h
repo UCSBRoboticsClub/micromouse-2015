@@ -30,7 +30,8 @@ const float dt = 1.f / controlFreq;
 const float wheelCirc = 0.1f;
 const int ppr = 1200;
 const float count2dist = wheelCirc / ppr;
-const float wheelBase = 0.082f;
+const float wheelBaseMin = 0.0805f;
+const float wbConstant = 0.04f;
 const float pi = 3.14159265f;
 const float cellw = 0.18f;
 const float wallw = 0.012f;
@@ -88,6 +89,7 @@ extern bool manualSlow;
 extern float thetakp;
 extern float thetakd;
 extern float thctrlmax;
+extern float wheelBase;
 
 extern Button switch1;
 extern Button switch2;

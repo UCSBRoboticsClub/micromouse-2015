@@ -27,12 +27,14 @@ public:
     
     PIDController velocityLoop;
     PIDController positionLoop;
+    float velocityKd;
     
 //private:
     Motor motor;
     Encoder encoder;
     int lastCount;
     LowPass velocity;
+    LowPass acceleration;
     bool positionMode;
     float velocitySetpoint;
     float positionSetpoint;

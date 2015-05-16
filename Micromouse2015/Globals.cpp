@@ -20,8 +20,8 @@ float thctrl = 0.f;
 float speed = 0.f;
 float maxSpeed = 0.2f;
 float ctheta = 0.03f;
-float cside = 0.1f;
-float cfront = 0.1f;
+float cside = 0.05f;
+float cfront = 0.05f;
 float targetDist = 0.f;
 Direction direction = Direction::undefined;
 bool inDeadband = false;
@@ -30,6 +30,7 @@ bool manualSlow = false;
 float thetakp = 0.4f;
 float thetakd = 0.01f;
 float thctrlmax = 0.2f;
+float wheelBase = wheelBaseMin;
 
 Button switch1;
 Button switch2;
